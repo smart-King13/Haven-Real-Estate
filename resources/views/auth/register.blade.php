@@ -2,6 +2,10 @@
 
 @section('title', 'Register - Haven')
 
+@php
+    $hideNavbar = true;
+@endphp
+
 @section('content')
 <div class="relative min-h-screen flex items-center justify-center overflow-hidden bg-primary-950 px-6 py-32">
     <!-- Midnight Architectural Background -->

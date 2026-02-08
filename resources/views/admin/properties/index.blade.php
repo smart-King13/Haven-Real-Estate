@@ -98,12 +98,20 @@
             </thead>
             <tbody class="bg-white">
                 @forelse($properties as $property)
+                <?php 
+                    // Convert to object if array
+                    $prop = is_array($property) ? (object)$property : $property;
+                    $primaryImage = null;
+                    if (isset($prop->images) && is_array($prop->images) && count($prop->images) > 0) {
+                        $primaryImage = is_array($prop->images[0]) ? (object)$prop->images[0] : $prop->images[0];
+                    }
+                ?>
                 <tr class="group border-b border-gray-50 hover:bg-gray-50/50 transition-all duration-200">
                     <td class="px-8 py-6">
                         <div class="flex items-center">
                             <div class="flex-shrink-0 h-14 w-14">
-                                @if($property->primaryImage && file_exists(storage_path('app/public/' . $property->primaryImage->image_path)))
-                                    <img class="h-14 w-14 rounded-md object-cover border border-gray-200" src="{{ asset('storage/' . $property->primaryImage->image_path) }}" alt="{{ $property->title }}">
+                                @if($primaryImage && isset($primaryImage->image_path))
+                                    <img class="h-14 w-14 rounded-md object-cover border border-gray-200" src="{{ asset('storage/' . $primaryImage->image_path) }}" alt="{{ $prop->title ?? 'Property' }}">
                                 @else
                                     <div class="h-16 w-16 rounded-2xl bg-gray-100 border-4 border-white shadow-md flex items-center justify-center text-gray-400">
                                         <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -113,34 +121,34 @@
                                 @endif
                             </div>
                             <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900 leading-relaxed">{{ $property->title }}</div>
-                                <div class="text-sm text-gray-600 mt-1">{{ $property->location }}</div>
-                                <div class="text-xs text-gray-500 mt-1">{{ $property->category->name }}</div>
+                                <div class="text-sm font-medium text-gray-900 leading-relaxed">{{ $prop->title ?? 'Untitled' }}</div>
+                                <div class="text-sm text-gray-600 mt-1">{{ $prop->location ?? 'N/A' }}</div>
+                                <div class="text-xs text-gray-500 mt-1">{{ $prop->category_id ?? 'Uncategorized' }}</div>
                             </div>
                         </div>
                     </td>
                     <td class="px-6 py-6">
-                        <div class="text-sm font-medium text-gray-900">${{ number_format($property->price) }}</div>
+                        <div class="text-sm font-medium text-gray-900">{{ format_naira($prop->price ?? 0) }}</div>
                     </td>
                     <td class="px-6 py-6">
                         <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
-                            {{ ucfirst($property->type) }}
+                            {{ ucfirst($prop->type ?? 'sale') }}
                         </span>
                     </td>
                     <td class="px-6 py-6">
                         <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium border
-                            {{ $property->status === 'available' ? 'bg-green-50 text-green-700 border-green-200' : 
-                               ($property->status === 'sold' ? 'bg-red-50 text-red-700 border-red-200' : 
-                               ($property->status === 'rented' ? 'bg-teal-50 text-teal-700 border-teal-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200')) }}">
-                            {{ ucfirst($property->status) }}
+                            {{ ($prop->status ?? 'available') === 'available' ? 'bg-green-50 text-green-700 border-green-200' : 
+                               (($prop->status ?? '') === 'sold' ? 'bg-red-50 text-red-700 border-red-200' : 
+                               (($prop->status ?? '') === 'rented' ? 'bg-teal-50 text-teal-700 border-teal-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200')) }}">
+                            {{ ucfirst($prop->status ?? 'available') }}
                         </span>
                     </td>
                     <td class="px-6 py-6 text-sm text-gray-600">
-                        {{ $property->created_at->format('M d, Y') }}
+                        {{ isset($prop->created_at) ? date('M d, Y', strtotime($prop->created_at)) : 'N/A' }}
                     </td>
                     <td class="px-8 py-6 text-right">
                         <div class="flex justify-end items-center gap-2">
-                            <a href="{{ route('properties.show', $property->slug) }}" target="_blank" 
+                            <a href="{{ route('properties.show', $prop->slug ?? $prop->id) }}" target="_blank" 
                                class="inline-flex items-center justify-center w-10 h-10 rounded-xl text-gray-400 hover:text-primary-900 hover:bg-gray-100 transition-all duration-200 border border-transparent hover:border-gray-100"
                                title="View Property">
                                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -148,14 +156,14 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
                             </a>
-                            <a href="{{ route('admin.properties.edit', $property->id) }}" 
+                            <a href="{{ route('admin.properties.edit', $prop->id) }}" 
                                class="inline-flex items-center justify-center w-10 h-10 rounded-xl text-gray-400 hover:text-accent-600 hover:bg-accent-50 transition-all duration-200 border border-transparent hover:border-accent-100"
                                title="Edit Property">
                                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                                 </svg>
                             </a>
-                            <form method="POST" action="{{ route('admin.properties.destroy', $property->id) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this property?')">
+                            <form method="POST" action="{{ route('admin.properties.destroy', $prop->id) }}" class="inline">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" 
@@ -194,10 +202,30 @@
         </table>
     </div>
     
-    @if($properties->hasPages())
-    <div class="bg-gray-50/50 px-8 py-5 border-t border-gray-100">
-        {{ $properties->links() }}
-    </div>
-    @endif
+    {{-- Pagination removed - Supabase returns arrays not paginated collections --}}
 </div>
+
+<script>
+// Handle delete confirmation with better UX
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteForms = document.querySelectorAll('form[action*="properties"][action*="destroy"]');
+    
+    deleteForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (confirm('Are you sure you want to delete this property? This action cannot be undone.')) {
+                // Show loading state
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const originalContent = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+                
+                // Submit the form
+                form.submit();
+            }
+        });
+    });
+});
+</script>
 @endsection

@@ -2,6 +2,7 @@ node_modules/
 vendor/
 .env
 .env.backup
+.env.railway
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
@@ -12,3 +13,5 @@ storage/logs/*
 !storage/logs/.gitkeep
 public/storage
 public/hot
+database_backup.sqlite
+database/database.sqlite

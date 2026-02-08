@@ -10,16 +10,16 @@
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    @if($savedProperties->count() > 0)
+    @if(isset($properties) && count($properties) > 0)
         <div class="mb-6 flex justify-between items-center">
-            <p class="text-gray-600">{{ $savedProperties->total() }} saved {{ Str::plural('property', $savedProperties->total()) }}</p>
+            <p class="text-gray-600">{{ count($properties) }} saved {{ count($properties) === 1 ? 'property' : 'properties' }}</p>
             <a href="{{ route('properties.index') }}" class="text-accent-600 hover:text-accent-500 font-medium">
                 Browse More Properties
             </a>
         </div>
 
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            @foreach($savedProperties as $property)
+            @foreach($properties as $property)
             <div class="bg-white overflow-hidden shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
                 <div class="relative">
                     @if($property->primaryImage)
@@ -37,7 +37,7 @@
                         </span>
                     </div>
                     <div class="absolute top-2 right-2">
-                        <form method="POST" action="{{ route('user.saved-properties.remove', $property->slug) }}" 
+                        <form method="POST" action="{{ route('user.saved-properties.remove', $property->id) }}" 
                               onsubmit="return confirm('Remove this property from your favorites?')">
                             @csrf
                             @method('DELETE')
@@ -48,16 +48,11 @@
                             </button>
                         </form>
                     </div>
-                    <div class="absolute bottom-2 left-2">
-                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-white bg-opacity-90 text-gray-800">
-                            Saved {{ $property->pivot->created_at->diffForHumans() }}
-                        </span>
-                    </div>
                 </div>
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-2">
-                        <p class="text-sm font-medium text-accent-600">{{ $property->category ? $property->category->name : 'Uncategorized' }}</p>
-                        <p class="text-2xl font-bold text-gray-900">${{ number_format($property->price) }}</p>
+                        <p class="text-sm font-medium text-accent-600">{{ isset($property->category) ? $property->category : 'Uncategorized' }}</p>
+                        <p class="text-2xl font-bold text-gray-900">₦{{ number_format($property->price) }}</p>
                     </div>
                     <h3 class="text-lg font-medium text-gray-900 mb-2">
                         <a href="{{ route('properties.show', $property->slug) }}" class="hover:text-accent-600">
@@ -98,7 +93,7 @@
                            class="flex-1 bg-accent-600 border border-transparent rounded-md py-2 px-4 inline-flex justify-center text-sm font-medium text-white hover:bg-accent-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-500">
                             View Details
                         </a>
-                        <form method="POST" action="{{ route('user.saved-properties.remove', $property->slug) }}" class="flex-shrink-0">
+                        <form method="POST" action="{{ route('user.saved-properties.remove', $property->id) }}" class="flex-shrink-0">
                             @csrf
                             @method('DELETE')
                             <button type="submit" 
@@ -111,11 +106,6 @@
                 </div>
             </div>
             @endforeach
-        </div>
-
-        <!-- Pagination -->
-        <div class="mt-8">
-            {{ $savedProperties->links() }}
         </div>
     @else
         <div class="text-center py-12">

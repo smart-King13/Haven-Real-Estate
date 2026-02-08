@@ -37,13 +37,35 @@
     </div>
 
     <!-- Category Dropdown -->
+    @php
+        $selectedCategoryName = 'All Categories';
+        if (request('category_id')) {
+            foreach ($categories as $cat) {
+                if (is_object($cat) && $cat->id == request('category_id')) {
+                    $selectedCategoryName = $cat->name;
+                    break;
+                } elseif (is_array($cat) && $cat['id'] == request('category_id')) {
+                    $selectedCategoryName = $cat['name'];
+                    break;
+                }
+            }
+        }
+        $categoryMap = [];
+        foreach ($categories as $cat) {
+            if (is_object($cat)) {
+                $categoryMap[$cat->name] = $cat->id;
+            } else {
+                $categoryMap[$cat['name']] = $cat['id'];
+            }
+        }
+    @endphp
     <div class="flex-1 w-full px-8 md:px-10 py-6 group/input relative" 
-         x-data="{ open: false, selected: '{{ request('category_id') ? $categories->firstWhere('id', request('category_id'))->name : 'All Categories' }}' }">
+         x-data="{ open: false, selected: '{{ $selectedCategoryName }}' }">
         <label class="block text-[9px] font-black uppercase tracking-[0.4em] text-gray-400 mb-3 group-focus-within/input:text-accent-600 transition-colors">Category</label>
         <div @click="open = !open" @click.away="open = false" class="relative flex items-center gap-4 cursor-pointer">
             <svg class="w-5 h-5 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
             <span class="text-base font-black text-primary-950 tracking-wide uppercase truncate" x-text="selected"></span>
-            <input type="hidden" name="category_id" :value="selected === 'All Categories' ? '' : {!! $categories->mapWithKeys(fn($c) => [$c->name => $c->id])->toJson() !!}[selected]">
+            <input type="hidden" name="category_id" :value="selected === 'All Categories' ? '' : {!! json_encode($categoryMap) !!}[selected]">
             <svg class="w-3 h-3 text-gray-400 absolute right-0 transition-transform duration-300" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
         </div>
         <div x-show="open" 
@@ -53,8 +75,8 @@
              class="absolute left-0 right-0 top-full mt-4 bg-white/95 backdrop-blur-xl rounded-[30px] shadow-2xl border border-gray-100 overflow-hidden z-50 p-2 max-h-60 overflow-y-auto">
             <div @click="selected = 'All Categories'; open = false" class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.3em] text-primary-950 hover:bg-accent-500 hover:text-white rounded-[20px] transition-all cursor-pointer">All Categories</div>
             @foreach($categories as $category)
-                <div @click="selected = '{{ $category->name }}'; open = false" class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.3em] text-primary-950 hover:bg-accent-500 hover:text-white rounded-[20px] transition-all cursor-pointer">
-                    {{ $category->name }}
+                <div @click="selected = '{{ is_object($category) ? $category->name : $category['name'] }}'; open = false" class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.3em] text-primary-950 hover:bg-accent-500 hover:text-white rounded-[20px] transition-all cursor-pointer">
+                    {{ is_object($category) ? $category->name : $category['name'] }}
                 </div>
             @endforeach
         </div>

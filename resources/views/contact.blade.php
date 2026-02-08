@@ -130,7 +130,7 @@
 
                     <div class="space-y-2">
                         <label class="field-label">Phone Number</label>
-                        <input type="tel" name="phone" class="input-field" placeholder="+1 (555) 123-4567" value="{{ old('phone') }}">
+                        <input type="tel" name="phone" class="input-field" placeholder="+234 (0) 812 944 8461" value="{{ old('phone') }}">
                         @error('phone')
                             <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                         @enderror
@@ -206,7 +206,7 @@
                         <div class="space-y-2">
                             <h3 class="text-xl font-bold text-primary-950 group-hover:text-white transition-colors duration-500">Phone</h3>
                             <p class="text-gray-600 group-hover:text-white/80 transition-colors duration-500">Speak directly with our experts</p>
-                            <a href="tel:+1-555-HAVEN-01" class="text-accent-600 group-hover:text-accent-400 font-semibold transition-colors duration-500">+1 (555) HAVEN-01</a>
+                            <a href="tel:+2348129448461" class="text-accent-600 group-hover:text-accent-400 font-semibold transition-colors duration-500">{{ env('CONTACT_PHONE_FORMATTED', '+234 (0) 812 944 8461') }}</a>
                         </div>
                     </div>
 
@@ -236,8 +236,8 @@
                             <h3 class="text-xl font-bold text-primary-950 group-hover:text-white transition-colors duration-500">Office</h3>
                             <p class="text-gray-600 group-hover:text-white/80 transition-colors duration-500">Visit us for in-person consultation</p>
                             <address class="text-accent-600 group-hover:text-accent-400 font-semibold transition-colors duration-500 not-italic">
-                                123 Luxury Avenue<br>
-                                Premium District, NY 10001
+                                Adebola Street, Off Adeniran Ogunsanya Road<br>
+                                Surulere, Lagos State, Nigeria
                             </address>
                         </div>
                     </div>

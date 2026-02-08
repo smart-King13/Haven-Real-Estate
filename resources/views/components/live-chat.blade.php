@@ -131,6 +131,7 @@
         </div>
 
         <!-- Enhanced Quick Actions -->
+        @if(session('supabase_user'))
         <div x-show="showQuickActions && messages.length === 0" class="px-4 pb-3 shrink-0">
             <div class="text-xs font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Quick Actions</div>
             <div class="grid grid-cols-2 gap-2">
@@ -152,9 +153,11 @@
                 </button>
             </div>
         </div>
+        @endif
 
         <!-- Enhanced Message Input -->
         <div class="p-4 border-t border-gray-100 bg-white shrink-0">
+            @if(session('supabase_user'))
             <form @submit.prevent="sendMessage()" class="flex items-center gap-3">
                 <div class="flex-1 relative">
                     <input type="text" 
@@ -182,6 +185,19 @@
                     </svg>
                 </button>
             </form>
+            @else
+            <!-- Login Required Message -->
+            <div class="text-center py-3">
+                <p class="text-sm text-gray-600 mb-3 font-medium">Please login to send messages</p>
+                <a href="{{ route('login', ['redirect' => url()->current()]) }}" 
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-accent-600 to-accent-700 hover:from-primary-950 hover:to-primary-900 text-white text-sm font-semibold rounded-full transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                    </svg>
+                    Login to Chat
+                </a>
+            </div>
+            @endif
             
             <!-- Connection Status -->
             <div class="flex items-center justify-center mt-2 text-xs text-gray-400">

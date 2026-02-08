@@ -114,13 +114,23 @@
                     </div>
                     
                     <div>
+                        <?php
+                            $categoryOptions = [];
+                            foreach ($categories as $category) {
+                                $cat = is_array($category) ? (object)$category : $category;
+                                $categoryOptions[] = [
+                                    'value' => (string)($cat->id ?? ''),
+                                    'label' => $cat->name ?? ''
+                                ];
+                            }
+                        ?>
                         <x-select 
                             name="category_id" 
                             label="Category" 
                             placeholder="Select Category"
                             height="h-10"
                             :value="old('category_id')"
-                            :options="$categories->map(fn($c) => ['value' => (string)$c->id, 'label' => $c->name])->toArray()"
+                            :options="$categoryOptions"
                         />
                         @error('category_id')
                             <p class="field-error">{{ $message }}</p>

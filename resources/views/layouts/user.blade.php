@@ -107,15 +107,21 @@
                 <!-- Sidebar Footer -->
                 <div class="p-6 border-t border-white/10 shrink-0">
                     <div class="flex items-center gap-4 px-4 py-4 rounded-2xl bg-white/5">
+                        <?php 
+                            $profile = session('supabase_profile');
+                            $user = session('supabase_user');
+                            $userName = $profile->name ?? $user->email ?? 'User';
+                            $userAvatar = $profile->avatar ?? null;
+                        ?>
                         <div class="h-10 w-10 rounded-xl bg-accent-500 flex items-center justify-center font-bold text-white shadow-lg overflow-hidden">
-                            @if(Auth::user()->avatar && Illuminate\Support\Facades\Storage::disk('public')->exists(Auth::user()->avatar))
-                                <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}" class="h-full w-full object-cover">
+                            @if($userAvatar)
+                                <img src="{{ asset('storage/' . $userAvatar) }}?v={{ time() }}" alt="{{ $userName }}" class="h-full w-full object-cover" onerror="this.style.display='none'; this.parentElement.innerHTML='{{ substr($userName, 0, 1) }}';">
                             @else
-                                {{ substr(Auth::user()->name, 0, 1) }}
+                                {{ substr($userName, 0, 1) }}
                             @endif
                         </div>
                         <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium truncate">{{ Auth::user()->name }}</p>
+                            <p class="text-sm font-medium truncate">{{ $userName }}</p>
                             <p class="text-xs text-white/40 truncate italic">Member</p>
                         </div>
                     </div>
@@ -139,7 +145,15 @@
                     <h1 class="text-lg sm:text-xl font-medium text-gray-900 font-heading tracking-tight truncate">@yield('page-title', 'Dashboard')</h1>
                 </div>
 
-                <div class="flex items-center gap-4 sm:gap-6">
+                <div class="flex items-center gap-2 sm:gap-4">
+                    <!-- Current Time -->
+                    <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg" x-data="{ time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) }" x-init="setInterval(() => { time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }); }, 1000)">
+                        <svg class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="text-sm font-medium text-gray-700" x-text="time"></span>
+                    </div>
+
                     <!-- Notifications -->
                     <div class="relative" x-data="{ open: false, unreadCount: 0, notifications: [] }" x-init="fetchNotifications()">
                         <button @click="open = !open" class="p-2 text-gray-400 hover:text-primary-900 transition-colors relative">
@@ -259,12 +273,19 @@
 
                     <!-- User Actions -->
                     <div class="relative" x-data="{ open: false }">
+                        <?php 
+                            $profile = session('supabase_profile');
+                            $user = session('supabase_user');
+                            $userName = $profile->name ?? $user->email ?? 'User';
+                            $userEmail = $user->email ?? '';
+                            $userAvatar = $profile->avatar ?? null;
+                        ?>
                         <button @click="open = !open" class="flex items-center gap-1 sm:gap-2 focus:outline-none group">
                             <div class="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-gray-100 flex items-center justify-center text-xs sm:text-sm font-medium text-gray-900 group-hover:bg-gray-200 transition-colors overflow-hidden">
-                                @if(Auth::user()->avatar && Illuminate\Support\Facades\Storage::disk('public')->exists(Auth::user()->avatar))
-                                    <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}" class="h-full w-full object-cover">
+                                @if($userAvatar)
+                                    <img src="{{ asset('storage/' . $userAvatar) }}?v={{ time() }}" alt="{{ $userName }}" class="h-full w-full object-cover" onerror="this.style.display='none'; this.parentElement.innerHTML='{{ substr($userName, 0, 1) }}';">
                                 @else
-                                    {{ substr(Auth::user()->name, 0, 1) }}
+                                    {{ substr($userName, 0, 1) }}
                                 @endif
                             </div>
                             <svg class="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 group-hover:text-gray-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
@@ -274,8 +295,8 @@
                              class="absolute right-0 mt-2 sm:mt-3 w-48 sm:w-56 bg-white rounded-xl sm:rounded-2xl shadow-2xl border border-gray-100 py-2 z-50 transform origin-top-right transition-all duration-200"
                              style="display: none;">
                             <div class="px-3 sm:px-4 py-2 sm:py-3 border-b border-gray-50">
-                                <p class="text-xs sm:text-sm font-medium text-gray-900 truncate">{{ Auth::user()->name }}</p>
-                                <p class="text-xs text-gray-500 truncate">{{ Auth::user()->email }}</p>
+                                <p class="text-xs sm:text-sm font-medium text-gray-900 truncate">{{ $userName }}</p>
+                                <p class="text-xs text-gray-500 truncate">{{ $userEmail }}</p>
                             </div>
                             <a href="{{ route('user.profile.edit') }}" class="flex items-center px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-600 hover:bg-gray-50 hover:text-accent-600 transition-colors">
                                 <svg class="mr-2 sm:mr-3 h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>

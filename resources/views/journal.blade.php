@@ -109,10 +109,10 @@
                     <!-- Article Content -->
                     <div class="absolute inset-x-0 bottom-0 p-10 space-y-6">
                         <div class="space-y-3">
-                            <div class="text-accent-400 font-black text-[10px] uppercase tracking-[0.4em]">December 26, 2024</div>
-                            <h3 class="text-3xl font-black text-white leading-[1.1] tracking-tighter">Luxury Real Estate Market Trends for 2025</h3>
+                            <div class="text-accent-400 font-black text-[10px] uppercase tracking-[0.4em]">January 15, {{ date('Y') }}</div>
+                            <h3 class="text-3xl font-black text-white leading-[1.1] tracking-tighter">Lagos Real Estate Market Trends for {{ date('Y') }}</h3>
                             <p class="text-white/70 text-sm font-light leading-relaxed">
-                                Comprehensive analysis of emerging trends, investment opportunities, and market predictions for the luxury real estate sector.
+                                Comprehensive analysis of emerging trends, investment opportunities, and market predictions for the Nigerian luxury real estate sector.
                             </p>
                         </div>
                         
@@ -154,10 +154,10 @@
                     <!-- Article Content -->
                     <div class="absolute inset-x-0 bottom-0 p-10 space-y-6">
                         <div class="space-y-3">
-                            <div class="text-accent-400 font-black text-[10px] uppercase tracking-[0.4em]">December 24, 2024</div>
-                            <h3 class="text-3xl font-black text-white leading-[1.1] tracking-tighter">Smart Investment Strategies for Premium Properties</h3>
+                            <div class="text-accent-400 font-black text-[10px] uppercase tracking-[0.4em]">January 12, {{ date('Y') }}</div>
+                            <h3 class="text-3xl font-black text-white leading-[1.1] tracking-tighter">Smart Investment Strategies for Premium Properties in Nigeria</h3>
                             <p class="text-white/70 text-sm font-light leading-relaxed">
-                                Expert guidance on maximizing returns and building wealth through strategic luxury real estate investments.
+                                Expert guidance on maximizing returns and building wealth through strategic luxury real estate investments in Lagos and beyond.
                             </p>
                         </div>
                         
@@ -167,7 +167,7 @@
                                     <span class="text-white font-black text-[10px]">SA</span>
                                 </div>
                                 <div>
-                                    <div class="text-white font-bold text-xs">Sarah Anderson</div>
+                                    <div class="text-white font-bold text-xs">Adebayo Okonkwo</div>
                                     <div class="text-white/50 text-[10px] font-medium">Investment Advisor</div>
                                 </div>
                             </div>
@@ -249,8 +249,8 @@
                         </svg>
                     </div>
                     <div class="flex-1 space-y-2">
-                        <div class="text-accent-600 font-black text-[10px] uppercase tracking-[0.4em]">December 22, 2024</div>
-                        <h4 class="text-xl font-black text-primary-950 group-hover:text-accent-600 transition-colors duration-500">Q4 2024 Market Performance Review</h4>
+                        <div class="text-accent-600 font-black text-[10px] uppercase tracking-[0.4em]">January 8, {{ date('Y') }}</div>
+                        <h4 class="text-xl font-black text-primary-950 group-hover:text-accent-600 transition-colors duration-500">Q4 {{ date('Y') - 1 }} Market Performance Review</h4>
                         <p class="text-gray-600 font-light leading-relaxed">Comprehensive analysis of market performance, key metrics, and outlook for the coming quarter.</p>
                     </div>
                     <div class="w-12 h-12 bg-primary-950 group-hover:bg-accent-600 text-white rounded-full flex items-center justify-center transition-all duration-500 shrink-0">
@@ -268,9 +268,9 @@
                         </svg>
                     </div>
                     <div class="flex-1 space-y-2">
-                        <div class="text-accent-600 font-black text-[10px] uppercase tracking-[0.4em]">December 20, 2024</div>
-                        <h4 class="text-xl font-black text-primary-950 group-hover:text-accent-600 transition-colors duration-500">Emerging Neighborhoods: Where to Invest Next</h4>
-                        <p class="text-gray-600 font-light leading-relaxed">Identifying up-and-coming areas with strong growth potential and investment opportunities.</p>
+                        <div class="text-accent-600 font-black text-[10px] uppercase tracking-[0.4em]">January 5, {{ date('Y') }}</div>
+                        <h4 class="text-xl font-black text-primary-950 group-hover:text-accent-600 transition-colors duration-500">Emerging Neighborhoods in Lagos: Where to Invest Next</h4>
+                        <p class="text-gray-600 font-light leading-relaxed">Identifying up-and-coming areas in Lagos with strong growth potential and investment opportunities.</p>
                     </div>
                     <div class="w-12 h-12 bg-primary-950 group-hover:bg-accent-600 text-white rounded-full flex items-center justify-center transition-all duration-500 shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -287,9 +287,9 @@
                         </svg>
                     </div>
                     <div class="flex-1 space-y-2">
-                        <div class="text-accent-600 font-black text-[10px] uppercase tracking-[0.4em]">December 18, 2024</div>
-                        <h4 class="text-xl font-black text-primary-950 group-hover:text-accent-600 transition-colors duration-500">Sustainable Luxury: The Future of Premium Real Estate</h4>
-                        <p class="text-gray-600 font-light leading-relaxed">How sustainability and luxury converge in modern real estate development and investment.</p>
+                        <div class="text-accent-600 font-black text-[10px] uppercase tracking-[0.4em]">January 2, {{ date('Y') }}</div>
+                        <h4 class="text-xl font-black text-primary-950 group-hover:text-accent-600 transition-colors duration-500">Sustainable Luxury: The Future of Premium Real Estate in Nigeria</h4>
+                        <p class="text-gray-600 font-light leading-relaxed">How sustainability and luxury converge in modern Nigerian real estate development and investment.</p>
                     </div>
                     <div class="w-12 h-12 bg-primary-950 group-hover:bg-accent-600 text-white rounded-full flex items-center justify-center transition-all duration-500 shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

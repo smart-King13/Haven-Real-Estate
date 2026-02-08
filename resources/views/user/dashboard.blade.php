@@ -12,7 +12,7 @@
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 sm:gap-6 lg:gap-8">
                 <div class="flex-1 space-y-1 sm:space-y-2">
                     <h1 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-white font-heading tracking-tight underline decoration-accent-500/30 decoration-4 sm:decoration-6 lg:decoration-8 underline-offset-2 sm:underline-offset-4">
-                        Welcome back, {{ auth()->user()->name }}!
+                        Welcome back, {{ $profile->name ?? 'User' }}!
                     </h1>
                     <p class="text-sm sm:text-base lg:text-lg text-primary-100/80 font-normal">
                         Your property journey continues. {{ now()->format('l, F j, Y') }}
@@ -122,7 +122,7 @@
                 </div>
                 <h3 class="text-xs sm:text-sm font-semibold text-primary-200/60 uppercase tracking-widest">Total Spent</h3>
                 <p class="mt-1 sm:mt-2 text-2xl sm:text-3xl lg:text-4xl font-semibold text-white font-heading tracking-tight leading-none tabular-nums truncate">
-                    <span class="text-accent-400">$</span>{{ number_format($stats['total_spent']) }}
+                    <span class="text-accent-400">₦</span>{{ number_format($stats['total_spent']) }}
                 </p>
                 <div class="mt-auto pt-4 sm:pt-6 lg:pt-8">
                     <p class="text-xs font-semibold text-primary-300/50 uppercase tracking-widest">Lifetime Investment</p>
@@ -146,7 +146,7 @@
                 </a>
             </div>
             <div class="flex-1">
-                @if($recentSavedProperties->count() > 0)
+                @if(isset($recentSavedProperties) && count($recentSavedProperties) > 0)
                     <div class="divide-y divide-gray-50">
                         @foreach($recentSavedProperties as $property)
                         <div class="group px-4 sm:px-6 lg:px-8 py-4 sm:py-6 hover:bg-gray-50/50 transition-all duration-200 flex items-center gap-3 sm:gap-4 lg:gap-6">
@@ -174,7 +174,7 @@
                                         <span class="truncate">{{ $property->location }}</span>
                                     </span>
                                     <span class="text-gray-300 hidden sm:inline">•</span>
-                                    <span class="font-semibold text-primary-900 shrink-0">${{ number_format($property->price) }}</span>
+                                    <span class="font-semibold text-primary-900 shrink-0">{{ format_naira($property->price) }}</span>
                                 </div>
                             </div>
                             <div class="hidden md:flex flex-col items-end gap-1 sm:gap-2 shrink-0">
@@ -216,7 +216,7 @@
                 </a>
             </div>
             <div class="flex-1">
-                @if($recentPayments->count() > 0)
+                @if(isset($recentPayments) && count($recentPayments) > 0)
                     <div class="divide-y divide-gray-50">
                         @foreach($recentPayments as $payment)
                         <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 hover:bg-gray-50/50 transition-all duration-200 flex items-center justify-between">
@@ -232,7 +232,7 @@
                             </div>
                             <div class="flex flex-col items-end gap-2 sm:gap-3 shrink-0">
                                 <p class="text-lg sm:text-xl font-semibold text-gray-900 font-heading leading-none tabular-nums">
-                                    <span class="text-green-600">$</span>{{ number_format($payment->amount) }}
+                                    <span class="text-green-600">₦</span>{{ number_format($payment->amount) }}
                                 </p>
                                 <span class="inline-flex items-center px-2 sm:px-3 py-1 rounded-md sm:rounded-lg text-[9px] sm:text-[10px] font-semibold uppercase tracking-widest
                                     {{ $payment->status === 'completed' ? 'bg-green-100 text-green-700 shadow-sm shadow-green-500/5' : 

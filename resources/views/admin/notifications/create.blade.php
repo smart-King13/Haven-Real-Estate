@@ -153,19 +153,22 @@
                     <label class="block text-sm font-bold text-gray-700 mb-2">Select Users *</label>
                     <div class="border border-gray-200 rounded-xl p-4 max-h-64 overflow-y-auto space-y-2">
                         @foreach($users as $user)
+                        <?php 
+                            $u = is_array($user) ? (object)$user : $user;
+                        ?>
                         <label class="flex items-center p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors">
-                            <input type="checkbox" name="user_ids[]" value="{{ $user->id }}" class="w-4 h-4 text-accent-600 focus:ring-accent-500 rounded">
+                            <input type="checkbox" name="user_ids[]" value="{{ $u->id }}" class="w-4 h-4 text-accent-600 focus:ring-accent-500 rounded">
                             <div class="ml-3 flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-full bg-accent-600 flex items-center justify-center text-xs font-bold text-white overflow-hidden">
-                                    @if($user->avatar)
-                                        <img src="{{ asset('storage/' . $user->avatar) }}" alt="{{ $user->name }}" class="w-full h-full object-cover">
+                                    @if(isset($u->avatar) && $u->avatar)
+                                        <img src="{{ asset('storage/' . $u->avatar) }}" alt="{{ $u->name ?? 'User' }}" class="w-full h-full object-cover">
                                     @else
-                                        {{ substr($user->name, 0, 1) }}
+                                        {{ substr($u->name ?? 'U', 0, 1) }}
                                     @endif
                                 </div>
                                 <div>
-                                    <p class="text-sm font-medium text-gray-900">{{ $user->name }}</p>
-                                    <p class="text-xs text-gray-500">{{ $user->email }}</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ $u->name ?? 'Unknown' }}</p>
+                                    <p class="text-xs text-gray-500">{{ $u->email ?? 'No email' }}</p>
                                 </div>
                             </div>
                         </label>

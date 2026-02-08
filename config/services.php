@@ -48,4 +48,12 @@ return [
         'webhook_secret' => env('PAYSTACK_WEBHOOK_SECRET'),
     ],
 
+    // Supabase Configuration
+    'supabase' => [
+        'url' => env('SUPABASE_URL'),
+        'key' => env('SUPABASE_KEY'),
+        'service_key' => env('SUPABASE_SERVICE_KEY'),
+        'jwt_secret' => env('SUPABASE_JWT_SECRET'),
+    ],
+
 ];

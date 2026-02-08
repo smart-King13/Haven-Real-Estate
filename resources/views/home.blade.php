@@ -22,7 +22,7 @@
                 <!-- Signature Badge: Brand Safe -->
                 <div class="inline-flex items-center gap-4 animate-reveal">
                     <div class="w-12 h-[2px] bg-accent-500"></div>
-                    <span class="text-accent-400 font-bold uppercase tracking-[0.4em] text-[10px]">The Haven Standard — Est. 2024</span>
+                    <span class="text-accent-400 font-bold uppercase tracking-[0.4em] text-[10px]">The Haven Standard — Est. {{ date('Y') }}</span>
                 </div>
 
                 <!-- Main Exception Headline: Sans-Serif Bold -->
@@ -184,7 +184,7 @@
 
                 <div class="pt-6">
                     <a href="{{ route('properties.index') }}" class="inline-flex items-center gap-6 group">
-                        <span class="text-[11px] font-black uppercase tracking-[0.3em] border-b-2 border-gray-100 pb-2 group-hover:border-accent-500 transition-all">Our Curation Standards</span>
+                        <span class="text-[11px] font-black uppercase tracking-[0.3em] border-b-2 border-gray-100 pb-2 group-hover:border-accent-500 transition-all">View All Properties</span>
                         <div class="w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center group-hover:bg-primary-950 group-hover:border-primary-950 group-hover:text-white transition-all duration-500">
                             <svg class="w-4 h-4 translate-x-[-2px] group-hover:translate-x-0 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                         </div>
@@ -196,7 +196,7 @@
 </div>
 
 <!-- Featured Collection: Brand-Safe Editorial Gallery -->
-@if($featuredProperties->count() > 0)
+@if(count($featuredProperties) > 0)
 <div class="py-40 bg-gray-50">
     <div class="max-w-[1600px] mx-auto px-6 lg:px-12">
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-32 gap-12">
@@ -209,7 +209,7 @@
                     Discover our most recent architectural acquisitions. Each residence is selected for its unique story and uncompromising quality.
                 </p>
                 <a href="{{ route('properties.index') }}" class="inline-flex items-center gap-4 text-primary-950 hover:text-accent-600 transition-all font-bold uppercase tracking-[0.3em] text-[10px]">
-                    Explore Portfolio
+                    Explore All Properties
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                 </a>
             </div>
@@ -218,11 +218,22 @@
         <!-- Editorial Grid: Dynamic Aspect Ratios -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-16 lg:gap-32">
             @foreach($featuredProperties as $index => $property)
+            <?php 
+                // Convert to object if array
+                $prop = is_array($property) ? (object)$property : $property;
+                $primaryImage = null;
+                if (isset($prop->images) && is_array($prop->images) && count($prop->images) > 0) {
+                    $primaryImage = is_array($prop->images[0]) ? (object)$prop->images[0] : $prop->images[0];
+                } elseif (isset($prop->primaryImage)) {
+                    $primaryImage = is_array($prop->primaryImage) ? (object)$prop->primaryImage : $prop->primaryImage;
+                }
+                $category = isset($prop->category) ? (is_array($prop->category) ? (object)$prop->category : $prop->category) : null;
+            ?>
             <div class="group {{ $index % 2 != 0 ? 'md:mt-40' : '' }}">
-                <a href="{{ route('properties.show', $property->slug) }}" class="block space-y-10 group">
+                <a href="{{ route('properties.show', $prop->slug ?? $prop->id) }}" class="block space-y-10 group">
                     <div class="relative overflow-hidden rounded-[60px] aspect-[4/5] exceptional-shadow bg-gray-200">
-                        @if($property->primaryImage)
-                            <img src="{{ asset('storage/' . $property->primaryImage->image_path) }}" alt="" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
+                        @if($primaryImage)
+                            <img src="{{ asset('storage/' . $primaryImage->image_path) }}" alt="" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
                         @else
                             <div class="w-full h-full flex items-center justify-center opacity-20">
                                 <svg class="h-20 w-20 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -234,19 +245,19 @@
                         <!-- Hover Overlay: Brand Accent -->
                         <div class="absolute inset-0 bg-primary-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 flex items-center justify-center p-12">
                             <div class="glass-premium px-10 py-6 rounded-full text-white font-bold uppercase tracking-[0.3em] text-[10px]">
-                                View Details — ${{ number_format($property->price) }}
+                                View Details — {{ format_naira($prop->price) }}
                             </div>
                         </div>
                     </div>
 
                     <div class="flex justify-between items-start pt-6 border-t border-gray-100 group-hover:border-accent-500/50 transition-all duration-500">
                         <div class="space-y-3">
-                            <span class="text-accent-600 font-bold uppercase tracking-[0.3em] text-[9px]">{{ $property->category->name }}</span>
-                            <h3 class="text-3xl font-black text-primary-950 group-hover:text-accent-600 transition-colors">{{ $property->title }}</h3>
+                            <span class="text-accent-600 font-bold uppercase tracking-[0.3em] text-[9px]">{{ $category ? $category->name : 'Uncategorized' }}</span>
+                            <h3 class="text-3xl font-black text-primary-950 group-hover:text-accent-600 transition-colors">{{ $prop->title }}</h3>
                         </div>
                         <div class="text-right space-y-2 opacity-50 group-hover:opacity-100 transition-opacity">
-                            <div class="text-[10px] font-black uppercase tracking-[0.2em] text-primary-950">{{ $property->location }}</div>
-                            <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-accent-600">{{ $property->bedrooms }} Bed • {{ $property->bathrooms }} Bath</div>
+                            <div class="text-[10px] font-black uppercase tracking-[0.2em] text-primary-950">{{ $prop->location }}</div>
+                            <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-accent-600">{{ $prop->bedrooms }} Bed • {{ $prop->bathrooms }} Bath</div>
                         </div>
                     </div>
                 </a>
@@ -258,7 +269,7 @@
 @endif
 
 <!-- Latest Properties: Sophisticated Grid -->
-@if($recentProperties->count() > 0)
+@if(count($recentProperties) > 0)
 <div class="py-40 bg-white">
     <div class="max-w-[1600px] mx-auto px-6 lg:px-12">
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-12">
@@ -275,11 +286,21 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
             @foreach($recentProperties as $property)
+            <?php 
+                // Convert to object if array
+                $prop = is_array($property) ? (object)$property : $property;
+                $primaryImage = null;
+                if (isset($prop->images) && is_array($prop->images) && count($prop->images) > 0) {
+                    $primaryImage = is_array($prop->images[0]) ? (object)$prop->images[0] : $prop->images[0];
+                } elseif (isset($prop->primaryImage)) {
+                    $primaryImage = is_array($prop->primaryImage) ? (object)$prop->primaryImage : $prop->primaryImage;
+                }
+            ?>
             <div class="group">
-                <a href="{{ route('properties.show', $property->slug) }}" class="space-y-8 block group">
+                <a href="{{ route('properties.show', $prop->slug ?? $prop->id) }}" class="space-y-8 block group">
                     <div class="relative aspect-square overflow-hidden rounded-[40px] shadow-lg group-hover:shadow-2xl transition-all duration-700">
-                        @if($property->primaryImage)
-                            <img src="{{ asset('storage/' . $property->primaryImage->image_path) }}" alt="" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
+                        @if($primaryImage)
+                            <img src="{{ asset('storage/' . $primaryImage->image_path) }}" alt="" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
                         @else
                             <div class="w-full h-full bg-gray-100 flex items-center justify-center">
                                 <svg class="h-10 w-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -290,16 +311,16 @@
                         <!-- Subtle Brand Tag -->
                         <div class="absolute top-6 left-6">
                             <span class="bg-white/90 backdrop-blur-md text-[9px] font-black uppercase tracking-[0.3em] px-5 py-2 rounded-full text-primary-950 shadow-sm border border-gray-100">
-                                {{ $property->type == 'sale' ? 'Purchase' : 'Lease' }}
+                                {{ $prop->type == 'sale' ? 'Purchase' : 'Lease' }}
                             </span>
                         </div>
                     </div>
                     <div class="space-y-4">
                         <div class="flex justify-between items-start">
-                            <h3 class="text-xl font-bold text-primary-950 group-hover:text-accent-600 transition-colors">{{ $property->title }}</h3>
-                            <span class="text-accent-600 font-black text-[11px] tracking-tight whitespace-nowrap">${{ number_format($property->price) }}</span>
+                            <h3 class="text-xl font-bold text-primary-950 group-hover:text-accent-600 transition-colors">{{ $prop->title }}</h3>
+                            <span class="text-accent-600 font-black text-[11px] tracking-tight whitespace-nowrap">{{ format_naira($prop->price) }}</span>
                         </div>
-                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 group-hover:text-gray-950 transition-colors">{{ $property->location }}</p>
+                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 group-hover:text-gray-950 transition-colors">{{ $prop->location }}</p>
                     </div>
                 </a>
             </div>

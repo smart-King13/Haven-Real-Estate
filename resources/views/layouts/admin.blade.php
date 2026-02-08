@@ -7,6 +7,11 @@
 
     <title>@yield('title', 'Admin Dashboard - Haven')</title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('images/haven-logo.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('images/haven-logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/haven-logo.png') }}">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -98,6 +103,13 @@
                         Notifications
                     </a>
 
+                    <a href="{{ route('admin.newsletter.index') }}" class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ request()->routeIs('admin.newsletter.*') ? 'bg-accent-600 text-white shadow-lg shadow-accent-600/20' : 'text-white/60 hover:text-white hover:bg-white/5' }}">
+                        <svg class="mr-3 h-5 w-5 {{ request()->routeIs('admin.newsletter.*') ? 'text-white' : 'text-white/40 group-hover:text-accent-400' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                        </svg>
+                        Newsletter
+                    </a>
+
                     <div class="pt-8 space-y-1">
                         <div class="text-xs font-semibold text-white/30 uppercase tracking-widest pl-4 mb-4">Quick Links</div>
                         <a href="{{ route('admin.properties.create') }}" class="group flex items-center px-4 py-2 text-sm text-white/60 hover:text-white transition-colors">
@@ -112,15 +124,21 @@
                 <!-- Sidebar Footer -->
                 <div class="p-6 border-t border-white/10 shrink-0">
                     <div class="flex items-center gap-4 px-4 py-4 rounded-2xl bg-white/5">
+                        <?php 
+                            $profile = session('supabase_profile');
+                            $user = session('supabase_user');
+                            $userName = $profile->name ?? $user->email ?? 'Admin';
+                            $userAvatar = $profile->avatar ?? null;
+                        ?>
                         <div class="h-10 w-10 rounded-xl bg-accent-500 flex items-center justify-center font-bold text-white shadow-lg overflow-hidden">
-                            @if(Auth::user()->avatar && Illuminate\Support\Facades\Storage::disk('public')->exists(Auth::user()->avatar))
-                                <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}" class="h-full w-full object-cover">
+                            @if($userAvatar)
+                                <img src="{{ asset('storage/' . $userAvatar) }}?v={{ time() }}" alt="{{ $userName }}" class="h-full w-full object-cover" onerror="this.style.display='none'; this.parentElement.innerHTML='{{ substr($userName, 0, 1) }}';">
                             @else
-                                {{ substr(Auth::user()->name, 0, 1) }}
+                                {{ substr($userName, 0, 1) }}
                             @endif
                         </div>
                         <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium truncate">{{ Auth::user()->name }}</p>
+                            <p class="text-sm font-medium truncate">{{ $userName }}</p>
                             <p class="text-xs text-white/40 truncate italic">Administrator</p>
                         </div>
                     </div>
@@ -144,23 +162,151 @@
                     <h1 class="text-lg sm:text-xl font-medium text-gray-900 font-heading tracking-tight truncate">@yield('page-title', 'Dashboard')</h1>
                 </div>
 
-                <div class="flex items-center gap-4 sm:gap-6">
-                    <!-- Notifications (Static for UI) -->
-                    <button class="p-2 text-gray-400 hover:text-primary-900 transition-colors relative">
-                        <svg class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                <div class="flex items-center gap-2 sm:gap-4">
+                    <!-- Current Time -->
+                    <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg" x-data="{ time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) }" x-init="setInterval(() => { time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }); }, 1000)">
+                        <svg class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span class="absolute top-1 right-1 sm:top-1.5 sm:right-1.5 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-500 rounded-full ring-1 sm:ring-2 ring-white"></span>
-                    </button>
+                        <span class="text-sm font-medium text-gray-700" x-text="time"></span>
+                    </div>
+
+                    <!-- Notifications -->
+                    <div class="relative" x-data="{ open: false, unreadCount: 0, notifications: [] }" x-init="fetchNotifications()">
+                        <button @click="open = !open" class="p-2 text-gray-400 hover:text-primary-900 transition-colors relative">
+                            <svg class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                            <span x-show="unreadCount > 0" class="absolute top-1 right-1 sm:top-1.5 sm:right-1.5 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-500 rounded-full ring-1 sm:ring-2 ring-white"></span>
+                        </button>
+
+                        <!-- Notifications Dropdown -->
+                        <div x-show="open" @click.away="open = false"
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-100"
+                             x-transition:leave-start="opacity-100 scale-100"
+                             x-transition:leave-end="opacity-0 scale-95"
+                             class="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 max-h-[32rem] overflow-hidden"
+                             style="display: none;">
+                            
+                            <!-- Header -->
+                            <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+                                <h3 class="text-sm font-bold text-gray-900">Notifications</h3>
+                                <a href="{{ route('admin.notifications.index') }}" class="text-xs text-accent-600 hover:text-accent-700 font-medium">View All</a>
+                            </div>
+
+                            <!-- Notifications List -->
+                            <div class="max-h-96 overflow-y-auto">
+                                <template x-if="notifications.length === 0">
+                                    <div class="p-8 text-center">
+                                        <svg class="w-12 h-12 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                                        </svg>
+                                        <p class="text-sm text-gray-500">No notifications</p>
+                                    </div>
+                                </template>
+
+                                <template x-for="notification in notifications" :key="notification.id">
+                                    <div class="p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer"
+                                         :class="{ 'bg-accent-50/30': !notification.is_read }">
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                                                 :class="{
+                                                     'bg-green-100': notification.type === 'success',
+                                                     'bg-yellow-100': notification.type === 'warning',
+                                                     'bg-red-100': notification.type === 'danger',
+                                                     'bg-blue-100': notification.type === 'info'
+                                                 }">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                                     :class="{
+                                                         'text-green-600': notification.type === 'success',
+                                                         'text-yellow-600': notification.type === 'warning',
+                                                         'text-red-600': notification.type === 'danger',
+                                                         'text-blue-600': notification.type === 'info'
+                                                     }">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-semibold text-gray-900 mb-1" x-text="notification.title"></p>
+                                                <p class="text-xs text-gray-600 line-clamp-2" x-text="notification.message"></p>
+                                                <p class="text-xs text-gray-400 mt-1" x-text="formatTime(notification.created_at)"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Footer -->
+                            <template x-if="unreadCount > 0">
+                                <div class="p-3 border-t border-gray-100 text-center">
+                                    <button @click="markAllAsRead()" class="text-xs text-accent-600 hover:text-accent-700 font-medium">
+                                        Mark all as read
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+
+                        <script>
+                            function fetchNotifications() {
+                                fetch('{{ route('user.notifications.get') }}')
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        this.notifications = data.notifications;
+                                        this.unreadCount = data.unread_count;
+                                    })
+                                    .catch(() => {
+                                        this.notifications = [];
+                                        this.unreadCount = 0;
+                                    });
+                            }
+
+                            function markAllAsRead() {
+                                fetch('{{ route('user.notifications.read-all') }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                                    }
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        this.fetchNotifications();
+                                    }
+                                });
+                            }
+
+                            function formatTime(dateString) {
+                                const date = new Date(dateString);
+                                const now = new Date();
+                                const diff = Math.floor((now - date) / 1000);
+
+                                if (diff < 60) return 'Just now';
+                                if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+                                if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+                                return Math.floor(diff / 86400) + 'd ago';
+                            }
+                        </script>
+                    </div>
 
                     <!-- User Actions -->
                     <div class="relative" x-data="{ open: false }">
+                        <?php 
+                            $profile = session('supabase_profile');
+                            $user = session('supabase_user');
+                            $userName = $profile->name ?? $user->email ?? 'Admin';
+                            $userEmail = $user->email ?? 'No email';
+                            $userAvatar = $profile->avatar ?? null;
+                        ?>
                         <button @click="open = !open" class="flex items-center gap-1 sm:gap-2 focus:outline-none group">
                             <div class="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-gray-100 flex items-center justify-center text-xs sm:text-sm font-medium text-gray-900 group-hover:bg-gray-200 transition-colors overflow-hidden">
-                                @if(Auth::user()->avatar && Illuminate\Support\Facades\Storage::disk('public')->exists(Auth::user()->avatar))
-                                    <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}" class="h-full w-full object-cover">
+                                @if($userAvatar)
+                                    <img src="{{ asset('storage/' . $userAvatar) }}" alt="{{ $userName }}" class="h-full w-full object-cover" onerror="this.style.display='none'; this.parentElement.innerHTML='{{ substr($userName, 0, 1) }}';">
                                 @else
-                                    {{ substr(Auth::user()->name, 0, 1) }}
+                                    {{ substr($userName, 0, 1) }}
                                 @endif
                             </div>
                             <svg class="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 group-hover:text-gray-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
@@ -170,8 +316,8 @@
                              class="absolute right-0 mt-2 sm:mt-3 w-48 sm:w-56 bg-white rounded-xl sm:rounded-2xl shadow-2xl border border-gray-100 py-2 z-50 transform origin-top-right transition-all duration-200"
                              style="display: none;">
                             <div class="px-3 sm:px-4 py-2 sm:py-3 border-b border-gray-50">
-                                <p class="text-xs sm:text-sm font-medium text-gray-900 truncate">{{ Auth::user()->name }}</p>
-                                <p class="text-xs text-gray-500 truncate">{{ Auth::user()->email }}</p>
+                                <p class="text-xs sm:text-sm font-medium text-gray-900 truncate">{{ $userName }}</p>
+                                <p class="text-xs text-gray-500 truncate">{{ $userEmail }}</p>
                             </div>
                             <a href="{{ route('admin.profile') }}" class="flex items-center px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-600 hover:bg-gray-50 hover:text-accent-600 transition-colors">
                                 <svg class="mr-2 sm:mr-3 h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>

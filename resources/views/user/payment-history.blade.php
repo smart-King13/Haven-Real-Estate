@@ -22,7 +22,7 @@
             </div>
         </div>
 
-        @if($payments->count() > 0)
+        @if(isset($payments) && count($payments) > 0)
             <!-- Payment History Table -->
             <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
                 <div class="p-6 border-b border-gray-100">
@@ -81,8 +81,8 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <div class="font-bold text-lg text-primary-950">${{ number_format($payment->amount, 2) }}</div>
-                                    @if($payment->currency && $payment->currency !== 'USD')
+                                    <div class="font-bold text-lg text-primary-950">₦{{ number_format($payment->amount) }}</div>
+                                    @if(isset($payment->currency) && $payment->currency && $payment->currency !== 'NGN')
                                         <div class="text-xs text-gray-500">{{ $payment->currency }}</div>
                                     @endif
                                 </td>
@@ -97,8 +97,8 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <div class="text-sm text-primary-950">{{ $payment->created_at->format('M j, Y') }}</div>
-                                    <div class="text-xs text-gray-500">{{ $payment->created_at->format('g:i A') }}</div>
+                                    <div class="text-sm text-primary-950">{{ date('M j, Y', strtotime($payment->created_at)) }}</div>
+                                    <div class="text-xs text-gray-500">{{ date('g:i A', strtotime($payment->created_at)) }}</div>
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-2">
@@ -128,13 +128,6 @@
                         </tbody>
                     </table>
                 </div>
-
-                <!-- Pagination -->
-                @if($payments->hasPages())
-                    <div class="px-6 py-4 border-t border-gray-100">
-                        {{ $payments->links() }}
-                    </div>
-                @endif
             </div>
 
             <!-- Payment Summary -->
@@ -143,7 +136,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-gray-600">Total Spent</p>
-                            <p class="text-3xl font-black text-primary-950">${{ number_format($payments->where('status', 'completed')->sum('amount'), 2) }}</p>
+                            <p class="text-3xl font-black text-primary-950">₦{{ number_format(collect($payments)->where('status', 'completed')->sum('amount')) }}</p>
                         </div>
                         <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                             <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -157,7 +150,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-gray-600">Total Transactions</p>
-                            <p class="text-3xl font-black text-primary-950">{{ $payments->total() }}</p>
+                            <p class="text-3xl font-black text-primary-950">{{ count($payments) }}</p>
                         </div>
                         <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                             <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -171,7 +164,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-gray-600">Success Rate</p>
-                            <p class="text-3xl font-black text-primary-950">{{ $payments->count() > 0 ? round(($payments->where('status', 'completed')->count() / $payments->count()) * 100) : 0 }}%</p>
+                            <p class="text-3xl font-black text-primary-950">{{ count($payments) > 0 ? round((collect($payments)->where('status', 'completed')->count() / count($payments)) * 100) : 0 }}%</p>
                         </div>
                         <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
                             <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

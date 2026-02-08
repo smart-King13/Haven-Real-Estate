@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Web\AdminDashboardController;
+use App\Http\Controllers\Auth\SupabaseAuthController;
+use App\Http\Controllers\Web\SupabaseAdminDashboardController;
 use App\Http\Controllers\Web\HomeController;
-use App\Http\Controllers\Web\PaymentController;
-use App\Http\Controllers\Web\PropertyController;
-use App\Http\Controllers\Web\UserDashboardController;
+use App\Http\Controllers\Web\SupabasePaymentController;
+use App\Http\Controllers\Web\SupabasePropertyController;
+use App\Http\Controllers\Web\SupabaseUserDashboardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
@@ -207,64 +207,67 @@ Route::get('/test-csrf-api', function () {
     ]);
 });
 
-// Chat routes
-Route::post('/chat/send', [App\Http\Controllers\ChatController::class, 'sendMessage'])->name('chat.send');
-Route::get('/chat/history', [App\Http\Controllers\ChatController::class, 'getChatHistory'])->name('chat.history');
-Route::post('/chat/read', [App\Http\Controllers\ChatController::class, 'markAsRead'])->name('chat.read');
-Route::get('/chat/status', [App\Http\Controllers\ChatController::class, 'getOnlineStatus'])->name('chat.status');
+// Chat routes (disabled - ChatController not implemented yet)
+// Route::post('/chat/send', [App\Http\Controllers\ChatController::class, 'sendMessage'])->name('chat.send');
+// Route::get('/chat/history', [App\Http\Controllers\ChatController::class, 'getChatHistory'])->name('chat.history');
+// Route::post('/chat/read', [App\Http\Controllers\ChatController::class, 'markAsRead'])->name('chat.read');
+// Route::get('/chat/status', [App\Http\Controllers\ChatController::class, 'getOnlineStatus'])->name('chat.status');
 
-// Payment webhook routes (no CSRF protection needed)
-Route::post('/webhooks/stripe', [App\Http\Controllers\WebhookController::class, 'stripe'])->name('webhooks.stripe');
-Route::post('/webhooks/paystack', [App\Http\Controllers\WebhookController::class, 'paystack'])->name('webhooks.paystack');
+// Payment webhook routes (disabled - WebhookController not implemented yet)
+// Route::post('/webhooks/stripe', [App\Http\Controllers\WebhookController::class, 'stripe'])->name('webhooks.stripe');
+// Route::post('/webhooks/paystack', [App\Http\Controllers\WebhookController::class, 'paystack'])->name('webhooks.paystack');
 
 // Authentication routes
-Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
-Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
-Route::post('/register', [AuthController::class, 'register']);
+Route::get('/login', [SupabaseAuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [SupabaseAuthController::class, 'login']);
+Route::get('/register', [SupabaseAuthController::class, 'showRegisterForm'])->name('register');
+Route::post('/register', [SupabaseAuthController::class, 'register']);
 
 // Password reset routes
-Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
-Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->name('password.email');
+Route::get('/forgot-password', [SupabaseAuthController::class, 'showForgotPasswordForm'])->name('password.request');
+Route::post('/forgot-password', [SupabaseAuthController::class, 'forgotPassword'])->name('password.email');
 Route::get('/password-reset-sent', function () {
     return view('auth.password-reset-sent');
 })->name('password.sent');
-Route::post('/resend-password-reset', [AuthController::class, 'resendPasswordReset'])->name('password.resend');
-Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
-Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
+Route::post('/resend-password-reset', [SupabaseAuthController::class, 'resendPasswordReset'])->name('password.resend');
+Route::get('/reset-password/{token}', [SupabaseAuthController::class, 'showResetPasswordForm'])->name('password.reset');
+Route::post('/reset-password', [SupabaseAuthController::class, 'resetPassword'])->name('password.update');
 
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::post('/logout', [SupabaseAuthController::class, 'logout'])->name('logout');
+Route::get('/logout', function() {
+    return view('logout');
+});
 
-// Public property routes
-Route::get('/properties', [PropertyController::class, 'index'])->name('properties.index');
-Route::get('/properties/{property}', [PropertyController::class, 'show'])->name('properties.show');
+// Property routes - Public (no authentication required for browsing)
+Route::get('/properties', [SupabasePropertyController::class, 'index'])->name('properties.index');
+Route::get('/properties/{property}', [SupabasePropertyController::class, 'show'])->name('properties.show');
 
-// Protected routes
+// Property routes - Require authentication
 Route::middleware('auth')->group(function () {
-    // Property save/unsave
-    Route::post('/properties/{property}/toggle-save', [PropertyController::class, 'toggleSave'])->name('properties.toggle-save');
+    // Property save/unsave (requires login)
+    Route::post('/properties/{property}/toggle-save', [SupabasePropertyController::class, 'toggleSave'])->name('properties.toggle-save');
     
-    // Payment Flow
-    Route::get('/properties/{property}/checkout', [PaymentController::class, 'checkout'])->name('properties.checkout');
-    Route::post('/properties/{property}/checkout', [PaymentController::class, 'process'])->name('properties.pay.process');
-    Route::get('/payments/{id}/success', [PaymentController::class, 'success'])->name('payments.success');
-    Route::get('/payments/{id}/cancel', [PaymentController::class, 'cancel'])->name('payments.cancel');
+    // Payment Flow (requires login)
+    Route::get('/properties/{property}/checkout', [SupabasePaymentController::class, 'checkout'])->name('properties.checkout');
+    Route::post('/properties/{property}/checkout', [SupabasePaymentController::class, 'process'])->name('properties.pay.process');
+    Route::get('/payments/{id}/success', [SupabasePaymentController::class, 'success'])->name('payments.success');
+    Route::get('/payments/{id}/cancel', [SupabasePaymentController::class, 'cancel'])->name('payments.cancel');
     
     // User dashboard routes
     Route::prefix('dashboard')->name('user.')->group(function () {
-        Route::get('/', [UserDashboardController::class, 'index'])->name('dashboard');
-        Route::get('/saved-properties', [UserDashboardController::class, 'savedProperties'])->name('saved-properties');
-        Route::delete('/saved-properties/{property}', [UserDashboardController::class, 'removeSavedProperty'])->name('saved-properties.remove');
-        Route::get('/payment-history', [UserDashboardController::class, 'paymentHistory'])->name('payment-history');
-        Route::get('/profile', [UserDashboardController::class, 'editProfile'])->name('profile.edit');
-        Route::put('/profile', [UserDashboardController::class, 'updateProfile'])->name('profile.update');
+        Route::get('/', [SupabaseUserDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/saved-properties', [SupabaseUserDashboardController::class, 'savedProperties'])->name('saved-properties');
+        Route::delete('/saved-properties/{property}', [SupabaseUserDashboardController::class, 'removeSavedProperty'])->name('saved-properties.remove');
+        Route::get('/payment-history', [SupabaseUserDashboardController::class, 'paymentHistory'])->name('payment-history');
+        Route::get('/profile', [SupabaseUserDashboardController::class, 'editProfile'])->name('profile.edit');
+        Route::put('/profile', [SupabaseUserDashboardController::class, 'updateProfile'])->name('profile.update');
         
         // User notifications
-        Route::get('/notifications', [App\Http\Controllers\Web\UserNotificationController::class, 'index'])->name('notifications');
-        Route::get('/notifications/get', [App\Http\Controllers\Web\UserNotificationController::class, 'getNotifications'])->name('notifications.get');
-        Route::post('/notifications/{id}/read', [App\Http\Controllers\Web\UserNotificationController::class, 'markAsRead'])->name('notifications.read');
-        Route::post('/notifications/read-all', [App\Http\Controllers\Web\UserNotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
-        Route::delete('/notifications/{id}', [App\Http\Controllers\Web\UserNotificationController::class, 'destroy'])->name('notifications.destroy');
+        Route::get('/notifications', [SupabaseUserDashboardController::class, 'notifications'])->name('notifications');
+        Route::get('/notifications/get', [SupabaseUserDashboardController::class, 'notifications'])->name('notifications.get');
+        Route::post('/notifications/{id}/read', [SupabaseUserDashboardController::class, 'markNotificationRead'])->name('notifications.read');
+        Route::post('/notifications/read-all', [SupabaseUserDashboardController::class, 'markAllNotificationsRead'])->name('notifications.read-all');
+        Route::delete('/notifications/{id}', [SupabaseUserDashboardController::class, 'deleteNotification'])->name('notifications.destroy');
         
         Route::get('/messages', function () {
             return view('user.messages');
@@ -273,60 +276,80 @@ Route::middleware('auth')->group(function () {
     
     // Admin routes
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
-        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard', [SupabaseAdminDashboardController::class, 'index'])->name('dashboard');
         
         // Chat management
         Route::get('/chat', function () {
             return view('admin.chat.index');
         })->name('chat.index');
-        Route::get('/chat/sessions', [App\Http\Controllers\ChatController::class, 'getAdminChatSessions'])->name('chat.sessions');
-        Route::get('/chat/sessions/{sessionId}/messages', [App\Http\Controllers\ChatController::class, 'getSessionMessages'])->name('chat.messages');
-        Route::post('/chat/sessions/{sessionId}/send', [App\Http\Controllers\ChatController::class, 'sendAdminMessage'])->name('chat.send');
-        Route::post('/chat/sessions/{sessionId}/read', [App\Http\Controllers\ChatController::class, 'markAsRead'])->name('chat.mark-read');
-        Route::get('/chat/statistics', [App\Http\Controllers\ChatController::class, 'getChatStatistics'])->name('chat.statistics');
+        
+        // Additional chat routes (disabled - ChatController not implemented yet)
+        // Route::get('/chat/sessions', [App\Http\Controllers\ChatController::class, 'getAdminChatSessions'])->name('chat.sessions');
+        // Route::get('/chat/sessions/{sessionId}/messages', [App\Http\Controllers\ChatController::class, 'getSessionMessages'])->name('chat.messages');
+        // Route::post('/chat/sessions/{sessionId}/send', [App\Http\Controllers\ChatController::class, 'sendAdminMessage'])->name('chat.send');
+        // Route::post('/chat/sessions/{sessionId}/read', [App\Http\Controllers\ChatController::class, 'markAsRead'])->name('chat.mark-read');
+        // Route::get('/chat/statistics', [App\Http\Controllers\ChatController::class, 'getChatStatistics'])->name('chat.statistics');
         
         // Properties management
         Route::prefix('properties')->name('properties.')->group(function () {
-            Route::get('/', [AdminDashboardController::class, 'properties'])->name('index');
-            Route::get('/create', [AdminDashboardController::class, 'createProperty'])->name('create');
-            Route::post('/', [AdminDashboardController::class, 'storeProperty'])->name('store');
-            Route::get('/{id}/edit', [AdminDashboardController::class, 'editProperty'])->name('edit');
-            Route::put('/{id}', [AdminDashboardController::class, 'updateProperty'])->name('update');
-            Route::delete('/{id}', [AdminDashboardController::class, 'deleteProperty'])->name('destroy');
+            Route::get('/', [SupabaseAdminDashboardController::class, 'properties'])->name('index');
+            Route::get('/create', [SupabaseAdminDashboardController::class, 'createProperty'])->name('create');
+            Route::post('/', [SupabaseAdminDashboardController::class, 'storeProperty'])->name('store');
+            Route::get('/{id}/edit', [SupabaseAdminDashboardController::class, 'editProperty'])->name('edit');
+            Route::put('/{id}', [SupabaseAdminDashboardController::class, 'updateProperty'])->name('update');
+            Route::delete('/{id}', [SupabaseAdminDashboardController::class, 'deleteProperty'])->name('destroy');
+            
+            // Image management
+            Route::put('/{propertyId}/images/{imageId}/set-primary', [SupabaseAdminDashboardController::class, 'setPrimaryImage'])->name('images.set-primary');
+            Route::delete('/{propertyId}/images/{imageId}', [SupabaseAdminDashboardController::class, 'deleteImage'])->name('images.delete');
         });
         
         // Users management
-        Route::get('/users', [AdminDashboardController::class, 'users'])->name('users.index');
+        Route::get('/users', [SupabaseAdminDashboardController::class, 'users'])->name('users.index');
+        Route::post('/users/{userId}/toggle-status', [SupabaseAdminDashboardController::class, 'toggleUserStatus'])->name('users.toggle-status');
         
         // Payments management
-        Route::get('/payments', [AdminDashboardController::class, 'payments'])->name('payments.index');
+        Route::get('/payments', [SupabaseAdminDashboardController::class, 'payments'])->name('payments.index');
         
         // Categories management
         Route::prefix('categories')->name('categories.')->group(function () {
-            Route::get('/', [AdminDashboardController::class, 'categories'])->name('index');
-            Route::post('/', [AdminDashboardController::class, 'storeCategory'])->name('store');
-            Route::put('/{id}', [AdminDashboardController::class, 'updateCategory'])->name('update');
+            Route::get('/', [SupabaseAdminDashboardController::class, 'categories'])->name('index');
+            Route::post('/', [SupabaseAdminDashboardController::class, 'storeCategory'])->name('store');
+            Route::put('/{id}', [SupabaseAdminDashboardController::class, 'updateCategory'])->name('update');
         });
 
         // Profile management
-        Route::get('/profile', [AdminDashboardController::class, 'profile'])->name('profile');
-        Route::put('/profile', [AdminDashboardController::class, 'updateProfile'])->name('profile.update');
+        Route::get('/profile', [SupabaseAdminDashboardController::class, 'profile'])->name('profile');
+        Route::put('/profile', [SupabaseAdminDashboardController::class, 'updateProfile'])->name('profile.update');
         
         // Notifications management
         Route::prefix('notifications')->name('notifications.')->group(function () {
-            Route::get('/', [App\Http\Controllers\Web\NotificationController::class, 'index'])->name('index');
-            Route::get('/create', [App\Http\Controllers\Web\NotificationController::class, 'create'])->name('create');
-            Route::post('/', [App\Http\Controllers\Web\NotificationController::class, 'store'])->name('store');
-            Route::delete('/{id}', [App\Http\Controllers\Web\NotificationController::class, 'destroy'])->name('destroy');
-            Route::delete('/', [App\Http\Controllers\Web\NotificationController::class, 'destroyAll'])->name('destroy-all');
+            Route::get('/', [SupabaseAdminDashboardController::class, 'notifications'])->name('index');
+            Route::get('/create', [SupabaseAdminDashboardController::class, 'createNotification'])->name('create');
+            Route::post('/', [SupabaseAdminDashboardController::class, 'storeNotification'])->name('store');
+            Route::delete('/{id}', [SupabaseAdminDashboardController::class, 'deleteNotification'])->name('destroy');
+        });
+
+        // Newsletter management
+        Route::prefix('newsletter')->name('newsletter.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Web\AdminNewsletterController::class, 'index'])->name('index');
+            Route::get('/subscribers', [App\Http\Controllers\Web\AdminNewsletterController::class, 'subscribers'])->name('subscribers');
+            Route::delete('/subscribers/{id}', [App\Http\Controllers\Web\AdminNewsletterController::class, 'deleteSubscriber'])->name('delete-subscriber');
+            Route::get('/create-campaign', [App\Http\Controllers\Web\AdminNewsletterController::class, 'createCampaign'])->name('create-campaign');
+            Route::post('/store-campaign', [App\Http\Controllers\Web\AdminNewsletterController::class, 'storeCampaign'])->name('store-campaign');
+            Route::post('/send-campaign/{id}', [App\Http\Controllers\Web\AdminNewsletterController::class, 'sendCampaign'])->name('send-campaign');
         });
     });
 });
 
+// Newsletter subscription (Public routes)
+Route::post('/newsletter/subscribe', [App\Http\Controllers\Web\NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
+Route::post('/newsletter/unsubscribe', [App\Http\Controllers\Web\NewsletterController::class, 'unsubscribe'])->name('newsletter.unsubscribe');
+
 // Alias for profile routes (backward compatibility)
 Route::middleware('auth')->group(function () {
-    Route::get('/profile/edit', [UserDashboardController::class, 'editProfile'])->name('profile.edit');
-    Route::put('/profile', [UserDashboardController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/profile/edit', [SupabaseUserDashboardController::class, 'editProfile'])->name('profile.edit');
+    Route::put('/profile', [SupabaseUserDashboardController::class, 'updateProfile'])->name('profile.update');
 });
 
 // Image diagnostic route
@@ -367,3 +390,17 @@ Route::get('/refresh-csrf', function () {
         'token' => csrf_token()
     ]);
 });
+
+// Debug profile route
+Route::get('/debug-profile', function () {
+    $user = session('supabase_user');
+    $profile = session('supabase_profile');
+    
+    return response()->json([
+        'user' => $user,
+        'profile' => $profile,
+        'avatar_path' => $profile->avatar ?? 'not set',
+        'avatar_url' => isset($profile->avatar) ? asset('storage/' . $profile->avatar) : 'not set',
+        'avatar_file_exists' => isset($profile->avatar) ? file_exists(storage_path('app/public/' . $profile->avatar)) : false,
+    ]);
+})->middleware('auth');

@@ -78,7 +78,7 @@
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="p-6 border-b border-gray-100 flex items-center justify-between">
             <h2 class="text-lg font-black text-primary-950 uppercase tracking-wide">All Notifications</h2>
-            @if($notifications->total() > 0)
+            @if(count($notifications) > 0)
             <form action="{{ route('admin.notifications.destroy-all') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete all notifications?');">
                 @csrf
                 @method('DELETE')
@@ -89,7 +89,7 @@
             @endif
         </div>
 
-        @if($notifications->count() > 0)
+        @if(count($notifications) > 0)
         <div class="divide-y divide-gray-100">
             @foreach($notifications as $notification)
             <div class="p-6 hover:bg-gray-50 transition-colors">
@@ -159,10 +159,7 @@
             @endforeach
         </div>
 
-        <!-- Pagination -->
-        <div class="p-6 border-t border-gray-100">
-            {{ $notifications->links() }}
-        </div>
+        {{-- Pagination removed - Supabase returns arrays not paginated collections --}}
         @else
         <div class="p-12 text-center">
             <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -99,7 +99,7 @@
                         </div>
                     </div>
                     <div>
-                        <div class="text-5xl font-black leading-none mb-3">{{ $properties->total() }}<span class="text-accent-500">+</span></div>
+                        <div class="text-5xl font-black leading-none mb-3">{{ count($properties) }}<span class="text-accent-500">+</span></div>
                         <p class="text-[11px] font-bold uppercase tracking-[0.2em] opacity-40 leading-relaxed">Premium Properties <br>Available Now</p>
                     </div>
                 </div>
@@ -130,21 +130,37 @@
                 </h2>
             </div>
             <div class="text-right space-y-2">
-                <div class="text-accent-600 font-black text-5xl md:text-6xl leading-none">{{ $properties->total() }}</div>
+                <div class="text-accent-600 font-black text-5xl md:text-6xl leading-none">{{ count($properties) }}</div>
                 <div class="text-[10px] font-black uppercase tracking-[0.3em] text-primary-950/60">Exceptional Listings</div>
             </div>
         </div>
 
-        @if($properties->count() > 0)
+        @if(count($properties) > 0)
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 @foreach($properties as $property)
+                @php
+                    // Convert array to object for consistent access
+                    $property = is_array($property) ? (object)$property : $property;
+                    $property->images = $property->images ?? [];
+                    $property->primaryImage = $property->primaryImage ?? null;
+                    $property->category = is_array($property->category ?? null) ? (object)$property->category : ($property->category ?? (object)['name' => 'Uncategorized']);
+                    $property->is_featured = $property->is_featured ?? false;
+                    $property->bedrooms = $property->bedrooms ?? 0;
+                    $property->bathrooms = $property->bathrooms ?? 0;
+                    $property->area = $property->area ?? 0;
+                    $property->type = $property->type ?? 'sale';
+                    $property->slug = $property->slug ?? '';
+                    $property->title = $property->title ?? 'Property';
+                    $property->price = $property->price ?? 0;
+                    $property->location = $property->location ?? 'Location not specified';
+                @endphp
                 <div class="group bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-200">
                     <!-- Image Carousel -->
                     <div class="relative aspect-[4/3] overflow-hidden" 
-                         @if($property->images->count() > 0)
-                         x-data="imageCarousel({{ $property->images->count() }})"
+                         @if(count($property->images ?? []) > 0)
+                         x-data="imageCarousel({{ count($property->images) }})"
                          @endif>
-                        @if($property->images->count() > 0)
+                        @if(count($property->images ?? []) > 0)
                             <!-- Images -->
                             <div class="relative h-full">
                                 @foreach($property->images as $index => $image)
@@ -157,14 +173,14 @@
                                      x-transition:leave-start="opacity-100"
                                      x-transition:leave-end="opacity-0">
                                     <img class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" 
-                                         src="{{ asset('storage/' . $image->image_path) }}" 
+                                         src="{{ asset('storage/' . (is_object($image) ? $image->image_path : $image['image_path'])) }}" 
                                          alt="{{ $property->title }} - Image {{ $index + 1 }}">
                                 </div>
                                 @endforeach
                             </div>
 
                             <!-- Navigation Arrows (only show if more than 1 image) -->
-                            @if($property->images->count() > 1)
+                            @if(count($property->images) > 1)
                             <div class="absolute inset-0 flex items-center justify-between px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                 <!-- Previous Button -->
                                 <button @click="previousSlide()" 
@@ -195,11 +211,18 @@
                             @endif
                         @else
                             <!-- Fallback to Primary Image or Placeholder -->
-                            @if($property->primaryImage)
+                            @php
+                                $prop = is_array($property) ? (object)$property : $property;
+                                $primaryImage = $prop->primaryImage ?? null;
+                            @endphp
+                            @if($primaryImage)
                             <div class="h-full">
+                                @php
+                                    $imgPath = is_object($primaryImage) ? $primaryImage->image_path : (is_array($primaryImage) ? $primaryImage['image_path'] : $primaryImage);
+                                @endphp
                                 <img class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" 
-                                     src="{{ asset('storage/' . $property->primaryImage->image_path) }}" 
-                                     alt="{{ $property->title }}">
+                                     src="{{ asset('storage/' . $imgPath) }}" 
+                                     alt="{{ $prop->title }}">
                             </div>
                             @else
                             <!-- No Images Placeholder -->
@@ -212,22 +235,22 @@
                         @endif
                         
                         <!-- Save Button -->
-                        @auth
+                        @if(session('supabase_user'))
                         <div class="absolute top-3 right-3">
                             <button onclick="toggleSave('{{ $property->slug }}')" 
                                     id="save-btn-{{ $property->slug }}"
                                     class="w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all duration-200">
-                                <svg class="w-4 h-4 {{ $property->isSavedByUser(auth()->id()) ? 'text-red-500 fill-current' : 'text-gray-600' }}" 
-                                     fill="{{ $property->isSavedByUser(auth()->id()) ? 'currentColor' : 'none' }}" 
+                                <svg class="w-4 h-4 text-gray-600" 
+                                     fill="none" 
                                      stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                                 </svg>
                             </button>
                         </div>
-                        @endauth
+                        @endif
 
                         <!-- Featured Badge -->
-                        @if($property->featured)
+                        @if($property->is_featured ?? false)
                         <div class="absolute top-3 left-3">
                             <span class="px-2 py-1 bg-accent-600 text-white text-xs font-semibold rounded">
                                 Featured
@@ -236,10 +259,10 @@
                         @endif
 
                         <!-- Image Counter (like Zillow) -->
-                        @if($property->images->count() > 1)
+                        @if(count($property->images ?? []) > 1)
                         <div class="absolute top-3 left-1/2 transform -translate-x-1/2">
                             <div class="bg-black/50 text-white text-xs px-2 py-1 rounded-full">
-                                <span x-text="currentSlide + 1"></span> / {{ $property->images->count() }}
+                                <span x-text="currentSlide + 1"></span> / {{ count($property->images) }}
                             </div>
                         </div>
                         @endif
@@ -250,7 +273,7 @@
                         <!-- Price -->
                         <div class="mb-2">
                             <div class="text-xl font-bold text-gray-900">
-                                ${{ number_format($property->price) }}
+                                {{ format_naira($property->price) }}
                                 @if($property->type === 'rent')
                                     <span class="text-sm font-normal text-gray-500">/mo</span>
                                 @endif
@@ -281,12 +304,18 @@
                         <!-- Property Type -->
                         <div class="flex items-center justify-between">
                             <span class="text-xs text-gray-500 uppercase font-medium">
-                                {{ ucfirst($property->type) }} • {{ $property->category->name }}
+                                {{ ucfirst($property->type ?? 'sale') }} • {{ $property->category->name ?? 'Uncategorized' }}
                             </span>
-                            <a href="{{ route('properties.show', $property->slug) }}" 
-                               class="text-accent-600 hover:text-accent-700 text-sm font-medium">
-                                View Details
-                            </a>
+                            @if($property->slug)
+                                <a href="{{ route('properties.show', $property->slug) }}" 
+                                   class="text-accent-600 hover:text-accent-700 text-sm font-medium">
+                                    View Details
+                                </a>
+                            @else
+                                <span class="text-gray-400 text-sm font-medium">
+                                    No Details
+                                </span>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -294,11 +323,14 @@
             </div>
 
             <!-- Pagination -->
+            @if(count($properties) > 12)
             <div class="mt-32 flex justify-center">
                 <div class="bg-white rounded-[30px] shadow-2xl border border-gray-100 p-2">
-                    {{ $properties->links() }}
+                    {{-- Pagination removed for now - Supabase returns arrays not paginated collections --}}
+                    <p class="text-sm text-gray-500 px-6 py-3">Showing {{ count($properties) }} properties</p>
                 </div>
             </div>
+            @endif
         @else
             <!-- Empty State -->
             <div class="bg-gray-50 rounded-[60px] p-32 md:p-48 text-center border-2 border-dashed border-gray-200 animate-reveal">

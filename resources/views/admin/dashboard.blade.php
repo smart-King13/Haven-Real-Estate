@@ -15,7 +15,7 @@
                         Superadmin Control Panel
                     </h1>
                     <p class="text-sm sm:text-base lg:text-lg text-primary-100/80 font-normal">
-                        Welcome back, <span class="text-accent-400 font-medium underline decoration-accent-400/30">{{ auth()->user()->name }}</span>. Your real estate empire and platform stats at a glance.
+                        Welcome back, <span class="text-accent-400 font-medium underline decoration-accent-400/30">{{ session('supabase_profile')->name ?? session('supabase_user')->email ?? 'Admin' }}</span>. Your real estate empire and platform stats at a glance.
                     </p>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
@@ -129,7 +129,7 @@
                 </div>
                 <h3 class="text-xs sm:text-sm font-semibold text-primary-200/60 uppercase tracking-widest">Total Earnings</h3>
                 <p class="mt-1 sm:mt-2 text-2xl sm:text-3xl lg:text-4xl font-semibold text-white font-heading tracking-tight leading-none tabular-nums truncate">
-                    <span class="text-accent-400">$</span>{{ number_format($stats['payments']['total_revenue']) }}
+                    <span class="text-accent-400">₦</span>{{ number_format($stats['payments']['total_revenue']) }}
                 </p>
                 <div class="mt-auto pt-4 sm:pt-6 lg:pt-8">
                     <p class="text-xs font-semibold text-primary-300/50 uppercase tracking-widest">Lifetime Performance</p>
@@ -153,13 +153,25 @@
                 </a>
             </div>
             <div class="flex-1">
-                @if($recentProperties->count() > 0)
+                @if(count($recentProperties) > 0)
                     <div class="divide-y divide-gray-50">
                         @foreach($recentProperties as $property)
+                        <?php 
+                            // Convert to object if array
+                            $prop = is_array($property) ? (object)$property : $property;
+                            $primaryImage = null;
+                            if (isset($prop->primaryImage)) {
+                                $primaryImage = is_array($prop->primaryImage) ? (object)$prop->primaryImage : $prop->primaryImage;
+                            }
+                            $user = null;
+                            if (isset($prop->user)) {
+                                $user = is_array($prop->user) ? (object)$prop->user : $prop->user;
+                            }
+                        ?>
                         <div class="group px-4 sm:px-6 lg:px-8 py-4 sm:py-6 hover:bg-gray-50/50 transition-all duration-200 flex items-center gap-3 sm:gap-4 lg:gap-6">
                             <div class="relative shrink-0">
-                                @if($property->primaryImage)
-                                    <img class="h-12 w-12 sm:h-16 sm:w-16 lg:h-20 lg:w-20 rounded-xl sm:rounded-2xl object-cover ring-2 sm:ring-4 ring-gray-50 shadow-lg group-hover:ring-accent-500 group-hover:shadow-accent-500/10 transition-all" src="{{ asset('storage/' . $property->primaryImage->image_path) }}" alt="{{ $property->title }}">
+                                @if($primaryImage && isset($primaryImage->image_path))
+                                    <img class="h-12 w-12 sm:h-16 sm:w-16 lg:h-20 lg:w-20 rounded-xl sm:rounded-2xl object-cover ring-2 sm:ring-4 ring-gray-50 shadow-lg group-hover:ring-accent-500 group-hover:shadow-accent-500/10 transition-all" src="{{ asset('storage/' . $primaryImage->image_path) }}" alt="{{ $prop->title ?? 'Property' }}">
                                 @else
                                     <div class="h-12 w-12 sm:h-16 sm:w-16 lg:h-20 lg:w-20 rounded-xl sm:rounded-2xl bg-gray-100 flex items-center justify-center ring-2 sm:ring-4 ring-gray-50 text-gray-400 group-hover:bg-accent-50 group-hover:text-accent-500 transition-all">
                                         <svg class="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -170,33 +182,35 @@
                                 <div class="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 px-1.5 sm:px-2 py-0.5 bg-accent-600 text-[9px] sm:text-[10px] font-semibold text-white rounded-md sm:rounded-lg shadow-lg uppercase tracking-tight">Active</div>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <a href="{{ route('admin.properties.edit', $property->id) }}" class="block text-sm sm:text-base lg:text-lg font-semibold text-gray-900 group-hover:text-accent-600 transition-colors truncate">
-                                    {{ $property->title }}
+                                <a href="{{ route('admin.properties.edit', $prop->id ?? '#') }}" class="block text-sm sm:text-base lg:text-lg font-semibold text-gray-900 group-hover:text-accent-600 transition-colors truncate">
+                                    {{ $prop->title ?? 'Untitled Property' }}
                                 </a>
                                 <div class="flex items-center gap-2 sm:gap-3 mt-1 text-xs sm:text-sm text-gray-500 font-medium">
                                     <span class="flex items-center truncate">
                                         <svg class="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-1.5 text-accent-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                         </svg>
-                                        <span class="truncate">{{ $property->location }}</span>
+                                        <span class="truncate">{{ $prop->location ?? 'N/A' }}</span>
                                     </span>
                                     <span class="text-gray-300 hidden sm:inline">•</span>
-                                    <span class="font-semibold text-primary-900 shrink-0">${{ number_format($property->price) }}</span>
+                                    <span class="font-semibold text-primary-900 shrink-0">{{ format_naira($prop->price ?? 0) }}</span>
                                 </div>
                             </div>
+                            @if($user)
                             <div class="hidden md:flex flex-col items-end gap-1 sm:gap-2 shrink-0">
                                 <p class="text-[9px] sm:text-[10px] font-semibold text-gray-400 uppercase tracking-widest text-right">Managed by</p>
                                 <div class="flex items-center gap-1 sm:gap-2">
-                                    <span class="text-xs sm:text-sm font-medium text-gray-900 truncate max-w-20 sm:max-w-none">{{ $property->user->name }}</span>
+                                    <span class="text-xs sm:text-sm font-medium text-gray-900 truncate max-w-20 sm:max-w-none">{{ $user->name ?? 'Unknown' }}</span>
                                     <div class="w-5 h-5 sm:w-6 sm:h-6 rounded-md sm:rounded-lg bg-primary-100 flex items-center justify-center text-[9px] sm:text-[10px] font-semibold text-primary-900 overflow-hidden shrink-0">
-                                        @if($property->user->avatar)
-                                            <img src="{{ asset('storage/' . $property->user->avatar) }}" alt="{{ $property->user->name }}" class="w-full h-full object-cover">
+                                        @if(isset($user->avatar) && $user->avatar)
+                                            <img src="{{ asset('storage/' . $user->avatar) }}" alt="{{ $user->name ?? 'User' }}" class="w-full h-full object-cover">
                                         @else
-                                            {{ substr($property->user->name, 0, 1) }}
+                                            {{ substr($user->name ?? 'U', 0, 1) }}
                                         @endif
                                     </div>
                                 </div>
                             </div>
+                            @endif
                         </div>
                         @endforeach
                     </div>
@@ -227,28 +241,40 @@
                 </a>
             </div>
             <div class="flex-1">
-                @if($recentPayments->count() > 0)
+                @if(count($recentPayments) > 0)
                     <div class="divide-y divide-gray-50">
                         @foreach($recentPayments as $payment)
+                        <?php 
+                            // Convert to object if array
+                            $pay = is_array($payment) ? (object)$payment : $payment;
+                            $property = null;
+                            if (isset($pay->property)) {
+                                $property = is_array($pay->property) ? (object)$pay->property : $pay->property;
+                            }
+                            $user = null;
+                            if (isset($pay->user)) {
+                                $user = is_array($pay->user) ? (object)$pay->user : $pay->user;
+                            }
+                        ?>
                         <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 hover:bg-gray-50/50 transition-all duration-200 flex items-center justify-between">
                             <div class="flex-1 min-w-0 pr-3 sm:pr-4">
                                 <p class="text-sm sm:text-base lg:text-lg font-semibold text-gray-900 truncate">
-                                    {{ $payment->property->title }}
+                                    {{ $property->title ?? 'Property Payment' }}
                                 </p>
                                 <div class="flex items-center gap-2 sm:gap-3 mt-1">
-                                    <p class="text-xs sm:text-sm font-medium text-gray-500 truncate">{{ $payment->user->name }}</p>
+                                    <p class="text-xs sm:text-sm font-medium text-gray-500 truncate">{{ $user->name ?? 'Unknown User' }}</p>
                                     <span class="text-gray-300 hidden sm:inline">•</span>
-                                    <p class="text-xs font-medium text-gray-400 shrink-0">{{ $payment->created_at->format('M d, Y') }}</p>
+                                    <p class="text-xs font-medium text-gray-400 shrink-0">{{ isset($pay->created_at) ? date('M d, Y', strtotime($pay->created_at)) : 'N/A' }}</p>
                                 </div>
                             </div>
                             <div class="flex flex-col items-end gap-2 sm:gap-3 shrink-0">
                                 <p class="text-lg sm:text-xl font-semibold text-gray-900 font-heading leading-none tabular-nums">
-                                    <span class="text-purple-600">$</span>{{ number_format($payment->amount) }}
+                                    <span class="text-purple-600">₦</span>{{ number_format($pay->amount ?? 0) }}
                                 </p>
                                 <span class="inline-flex items-center px-2 sm:px-3 py-1 rounded-md sm:rounded-lg text-[9px] sm:text-[10px] font-semibold uppercase tracking-widest
-                                    {{ $payment->status === 'completed' ? 'bg-green-100 text-green-700 shadow-sm shadow-green-500/5' : 
-                                       ($payment->status === 'pending' ? 'bg-yellow-100 text-yellow-700 shadow-sm shadow-yellow-500/5' : 'bg-red-100 text-red-700 shadow-sm shadow-red-500/5') }}">
-                                    {{ ucfirst($payment->status) }}
+                                    {{ ($pay->status ?? '') === 'completed' ? 'bg-green-100 text-green-700 shadow-sm shadow-green-500/5' : 
+                                       (($pay->status ?? '') === 'pending' ? 'bg-yellow-100 text-yellow-700 shadow-sm shadow-yellow-500/5' : 'bg-red-100 text-red-700 shadow-sm shadow-red-500/5') }}">
+                                    {{ ucfirst($pay->status ?? 'unknown') }}
                                 </span>
                             </div>
                         </div>

@@ -71,7 +71,7 @@
                                         </div>
                                         <div class="flex-1 min-w-0">
                                             <span class="block text-base lg:text-xl font-black text-white mb-1 lg:mb-2">Full Purchase</span>
-                                            <span class="block text-sm text-white/60 font-light">Complete ownership transfer - ${{ number_format($totalAmount) }}</span>
+                                            <span class="block text-sm text-white/60 font-light">Complete ownership transfer - {{ format_naira($totalAmount) }}</span>
                                         </div>
                                         <div class="w-5 h-5 lg:w-6 lg:h-6 rounded-full border-2 border-white/20 flex items-center justify-center shrink-0 peer-checked:border-accent-500 peer-checked:bg-accent-500 transition-all">
                                             <svg class="w-2.5 h-2.5 lg:w-3 lg:h-3 text-white transition-opacity peer-checked:opacity-100 opacity-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -91,7 +91,7 @@
                                         </div>
                                         <div class="flex-1 min-w-0">
                                             <span class="block text-base lg:text-xl font-black text-white mb-1 lg:mb-2">Security Deposit (10%)</span>
-                                            <span class="block text-sm text-white/60 font-light">Reserve property - ${{ number_format($property->price * 0.1) }}</span>
+                                            <span class="block text-sm text-white/60 font-light">Reserve property - {{ format_naira($property->price * 0.1) }}</span>
                                         </div>
                                         <div class="w-5 h-5 lg:w-6 lg:h-6 rounded-full border-2 border-white/20 peer-checked:border-accent-500 peer-checked:bg-accent-500 transition-all flex items-center justify-center shrink-0">
                                             <svg class="w-2.5 h-2.5 lg:w-3 lg:h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -112,7 +112,7 @@
                                         </div>
                                         <div class="flex-1 min-w-0">
                                             <span class="block text-base lg:text-xl font-black text-white mb-1 lg:mb-2">Monthly Rent</span>
-                                            <span class="block text-sm text-white/60 font-light">First month + fees - ${{ number_format($property->price + 250 + 150) }}</span>
+                                            <span class="block text-sm text-white/60 font-light">First month + fees - {{ format_naira($property->price + 250 + 150) }}</span>
                                         </div>
                                         <div class="w-5 h-5 lg:w-6 lg:h-6 rounded-full border-2 border-white/20 peer-checked:border-accent-500 peer-checked:bg-accent-500 transition-all flex items-center justify-center shrink-0">
                                             <svg class="w-2.5 h-2.5 lg:w-3 lg:h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -134,7 +134,7 @@
                                         </div>
                                         <div class="flex-1 min-w-0">
                                             <span class="block text-base lg:text-xl font-black text-white mb-1 lg:mb-2">Property Inspection</span>
-                                            <span class="block text-sm text-white/60 font-light">Professional inspection - $500</span>
+                                            <span class="block text-sm text-white/60 font-light">Professional inspection - ₦500</span>
                                         </div>
                                         <div class="w-5 h-5 lg:w-6 lg:h-6 rounded-full border-2 border-white/20 peer-checked:border-accent-500 peer-checked:bg-accent-500 transition-all flex items-center justify-center shrink-0">
                                             <svg class="w-2.5 h-2.5 lg:w-3 lg:h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -291,29 +291,29 @@
                             <!-- Purchase Line Items -->
                             <div class="flex justify-between items-center text-white/60">
                                 <span class="decoration-white/20 underline decoration-dashed underline-offset-4 font-light">Property Value</span>
-                                <span class="text-white font-black font-mono">${{ number_format($basePrice) }}</span>
+                                <span class="text-white font-black font-mono">{{ format_naira($basePrice) }}</span>
                             </div>
                             <div class="flex justify-between items-center text-white/60">
                                 <span class="decoration-white/20 underline decoration-dashed underline-offset-4 font-light">Acquisition Fee</span>
-                                <span class="text-white font-black font-mono">${{ number_format($acquisitionFee) }}</span>
+                                <span class="text-white font-black font-mono">{{ format_naira($acquisitionFee) }}</span>
                             </div>
                             <div class="flex justify-between items-center text-white/60">
                                 <span class="decoration-white/20 underline decoration-dashed underline-offset-4 font-light">Legal & Escrow</span>
-                                <span class="text-white font-black font-mono">${{ number_format($legalFee) }}</span>
+                                <span class="text-white font-black font-mono">{{ format_naira($legalFee) }}</span>
                             </div>
                             @else
                             <!-- Rental Line Items -->
                             <div class="flex justify-between items-center text-white/60">
                                 <span class="decoration-white/20 underline decoration-dashed underline-offset-4 font-light">Monthly Rent</span>
-                                <span class="text-white font-black font-mono">${{ number_format($basePrice) }}</span>
+                                <span class="text-white font-black font-mono">{{ format_naira($basePrice) }}</span>
                             </div>
                             <div class="flex justify-between items-center text-white/60">
                                 <span class="decoration-white/20 underline decoration-dashed underline-offset-4 font-light">Processing Fee</span>
-                                <span class="text-white font-black font-mono">${{ number_format($acquisitionFee) }}</span>
+                                <span class="text-white font-black font-mono">{{ format_naira($acquisitionFee) }}</span>
                             </div>
                             <div class="flex justify-between items-center text-white/60">
                                 <span class="decoration-white/20 underline decoration-dashed underline-offset-4 font-light">Admin Fee</span>
-                                <span class="text-white font-black font-mono">${{ number_format($legalFee) }}</span>
+                                <span class="text-white font-black font-mono">{{ format_naira($legalFee) }}</span>
                             </div>
                             @endif
                         </div>
@@ -324,10 +324,10 @@
                                 <div>
                                     <div class="text-[9px] lg:text-[10px] font-black uppercase tracking-[0.3em] text-accent-400 mb-2 lg:mb-3 flex items-center gap-2 lg:gap-3">
                                         Total Due
-                                        <span class="text-xs text-white/30">USD</span>
+                                        <span class="text-xs text-white/30">NGN</span>
                                     </div>
                                     <div class="text-2xl lg:text-4xl font-black font-heading text-white tracking-tight" id="total-amount">
-                                        ${{ number_format($totalAmount) }}
+                                        {{ format_naira($totalAmount) }}
                                     </div>
                                 </div>
                                 <div class="text-right">

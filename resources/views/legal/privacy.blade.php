@@ -248,9 +248,9 @@
                     <div class="bg-gray-50 p-6 rounded-lg">
                         <p><strong>Email:</strong> privacy@haven.com</p>
                         <p><strong>Address:</strong> Haven Real Estate<br>
-                        123 Property Lane<br>
-                        Real Estate City, RE 12345</p>
-                        <p><strong>Phone:</strong> +1 (555) 123-4567</p>
+                        Adebola Street, Off Adeniran Ogunsanya Road<br>
+                        Surulere, Lagos State, Nigeria</p>
+                        <p><strong>Phone:</strong> {{ env('CONTACT_PHONE_FORMATTED', '+234 (0) 812 944 8461') }}</p>
                     </div>
                     <p>For data protection inquiries specifically, you can also contact our Data Protection Officer at: dpo@haven.com</p>
                 </div>

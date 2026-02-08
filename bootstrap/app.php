@@ -13,7 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'admin' => \App\Http\Middleware\SupabaseAdmin::class,
+            'auth' => \App\Http\Middleware\SupabaseAuth::class,
             'webhook.signature' => \App\Http\Middleware\VerifyWebhookSignature::class,
             'sanitize' => \App\Http\Middleware\SanitizeInput::class,
             'security.headers' => \App\Http\Middleware\SecurityHeaders::class,

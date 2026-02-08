@@ -2,6 +2,10 @@
 
 @section('title', 'Check Your Email - Haven')
 
+@php
+    $hideNavbar = true;
+@endphp
+
 @section('content')
 <div class="relative min-h-screen flex items-center justify-center overflow-hidden bg-primary-950 px-6 py-32">
     <!-- Midnight Architectural Background -->
@@ -53,7 +57,7 @@
                             We've sent a password reset link to:
                         </p>
                         <div class="bg-primary-950/50 rounded-lg px-4 py-3 border border-white/5">
-                            <p class="text-accent-400 font-mono text-sm break-all">{{ session('reset_email', 'your email address') }}</p>
+                            <p class="text-accent-400 font-mono text-sm break-all">{{ session('email', 'your email address') }}</p>
                         </div>
                     </div>
                 </div>
@@ -123,9 +127,9 @@
             <!-- Action Buttons -->
             <div class="space-y-4">
                 <div class="flex flex-col sm:flex-row gap-4">
-                    <form method="POST" action="{{ route('password.resend') }}" class="flex-1">
+                    <form method="POST" action="{{ route('password.email') }}" class="flex-1">
                         @csrf
-                        <input type="hidden" name="email" value="{{ session('reset_email') }}">
+                        <input type="hidden" name="email" value="{{ session('email') }}">
                         <button type="submit" class="w-full h-12 bg-accent-600 text-white font-bold uppercase tracking-[0.2em] text-xs rounded-2xl hover:bg-accent-500 transition-all duration-300 shadow-xl">
                             Resend Email
                         </button>

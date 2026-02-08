@@ -20,7 +20,7 @@
     </div>
 
     <div class="card">     
-        <form method="POST" action="{{ route('admin.properties.update', $property->id) }}" class="space-y-8">
+        <form method="POST" action="{{ route('admin.properties.update', $property->id) }}" enctype="multipart/form-data" class="space-y-8">
             @csrf
             @method('PUT')
             
@@ -122,13 +122,23 @@
                     </div>
                     
                     <div>
+                        <?php
+                            $categoryOptions = [];
+                            foreach ($categories as $category) {
+                                $cat = is_array($category) ? (object)$category : $category;
+                                $categoryOptions[] = [
+                                    'value' => (string)($cat->id ?? ''),
+                                    'label' => $cat->name ?? ''
+                                ];
+                            }
+                        ?>
                         <x-select 
                             name="category_id" 
                             label="Category" 
                             placeholder="Select Category"
                             height="h-10"
                             :value="old('category_id', $property->category_id)"
-                            :options="$categories->map(fn($c) => ['value' => (string)$c->id, 'label' => $c->name])->toArray()"
+                            :options="$categoryOptions"
                         />
                         @error('category_id')
                             <p class="field-error">{{ $message }}</p>
@@ -232,6 +242,68 @@
                 </div>
             </div>
             
+            <!-- Property Images -->
+            <div>
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Property Images</h3>
+                
+                <!-- Current Images -->
+                @if(!empty($images) && count($images) > 0)
+                <div class="mb-6">
+                    <h4 class="text-sm font-medium text-gray-700 mb-3">Current Images</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        @foreach($images as $image)
+                        @php
+                            $img = is_array($image) ? (object)$image : $image;
+                        @endphp
+                        <div class="relative group">
+                            <img src="{{ asset('storage/' . $img->image_path) }}" 
+                                 alt="Property Image" 
+                                 class="w-full h-32 object-cover rounded-lg border-2 {{ $img->is_primary ? 'border-accent-500' : 'border-gray-200' }}">
+                            
+                            <!-- Primary Badge -->
+                            @if($img->is_primary)
+                            <div class="absolute top-2 left-2">
+                                <span class="px-2 py-1 bg-accent-600 text-white text-xs font-semibold rounded">
+                                    Primary
+                                </span>
+                            </div>
+                            @endif
+                            
+                            <!-- Action Buttons -->
+                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                                @if(!$img->is_primary)
+                                <button type="button" 
+                                        onclick="setPrimaryImage({{ $img->id }})"
+                                        class="px-3 py-1 bg-white text-gray-900 text-xs font-medium rounded hover:bg-gray-100">
+                                    Set Primary
+                                </button>
+                                @endif
+                                <button type="button" 
+                                        onclick="deleteImage({{ $img->id }})"
+                                        class="px-3 py-1 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700">
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+                
+                <!-- Upload New Images -->
+                <div>
+                    <h4 class="text-sm font-medium text-gray-700 mb-3">Add New Images</h4>
+                    <div class="border-2 border-dashed border-gray-200 rounded-md p-8 text-center hover:border-gray-300 transition-colors">
+                        <input type="file" name="images[]" id="images" multiple accept="image/*"
+                               class="file-input">
+                        <p class="mt-2 text-sm text-gray-600">Upload multiple images. Click "Set Primary" on any image to make it the main photo.</p>
+                    </div>
+                    @error('images')
+                        <p class="field-error">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+            
             <!-- Options -->
             <div>
                 <div class="flex items-center space-x-6">
@@ -260,4 +332,33 @@
         </form>
     </div>
 </div>
+
+<!-- Hidden forms for image actions -->
+<form id="setPrimaryForm" method="POST" style="display: none;">
+    @csrf
+    @method('PUT')
+</form>
+
+<form id="deleteImageForm" method="POST" style="display: none;">
+    @csrf
+    @method('DELETE')
+</form>
+
+<script>
+function setPrimaryImage(imageId) {
+    if (confirm('Set this image as the primary image?')) {
+        const form = document.getElementById('setPrimaryForm');
+        form.action = `/admin/properties/{{ $property->id }}/images/${imageId}/set-primary`;
+        form.submit();
+    }
+}
+
+function deleteImage(imageId) {
+    if (confirm('Are you sure you want to delete this image? This action cannot be undone.')) {
+        const form = document.getElementById('deleteImageForm');
+        form.action = `/admin/properties/{{ $property->id }}/images/${imageId}`;
+        form.submit();
+    }
+}
+</script>
 @endsection

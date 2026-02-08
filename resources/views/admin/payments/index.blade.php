@@ -80,6 +80,24 @@
 </div>
 
 <!-- Premium Analytics Grid -->
+<?php
+    // Calculate stats from array
+    $totalRevenue = 0;
+    $totalCount = count($payments);
+    $pendingCount = 0;
+    $completedCount = 0;
+    
+    foreach ($payments as $payment) {
+        $p = is_array($payment) ? (object)$payment : $payment;
+        if (($p->status ?? '') === 'completed') {
+            $totalRevenue += $p->amount ?? 0;
+            $completedCount++;
+        }
+        if (($p->status ?? '') === 'pending') {
+            $pendingCount++;
+        }
+    }
+?>
 <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
     <!-- Total Revenue -->
     <div class="group relative bg-gradient-to-br from-primary-900 to-primary-800 rounded-3xl p-8 shadow-xl shadow-primary-900/20 overflow-hidden transform hover:-translate-y-1 transition-all duration-300">
@@ -91,7 +109,7 @@
                 </svg>
             </div>
             <h3 class="text-xs font-semibold text-primary-200/60 uppercase tracking-widest">Total Revenue</h3>
-            <p class="mt-2 text-3xl font-semibold text-white font-heading tabular-nums">${{ number_format($payments->where('status', 'completed')->sum('amount')) }}</p>
+            <p class="mt-2 text-3xl font-semibold text-white font-heading tabular-nums">₦{{ number_format($totalRevenue) }}</p>
         </div>
     </div>
 
@@ -105,7 +123,7 @@
                 </svg>
             </div>
             <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-widest">Total Payments</h3>
-            <p class="mt-2 text-3xl font-semibold text-gray-900 font-heading tabular-nums">{{ $payments->count() }}</p>
+            <p class="mt-2 text-3xl font-semibold text-gray-900 font-heading tabular-nums">{{ $totalCount }}</p>
         </div>
     </div>
 
@@ -119,7 +137,7 @@
                 </svg>
             </div>
             <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-widest">Pending Verification</h3>
-            <p class="mt-2 text-3xl font-semibold text-gray-900 font-heading tabular-nums">{{ $payments->where('status', 'pending')->count() }}</p>
+            <p class="mt-2 text-3xl font-semibold text-gray-900 font-heading tabular-nums">{{ $pendingCount }}</p>
         </div>
     </div>
 
@@ -133,7 +151,7 @@
                 </svg>
             </div>
             <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-widest">Failed Transactions</h3>
-            <p class="mt-2 text-3xl font-semibold text-gray-900 font-heading tabular-nums">{{ $payments->where('status', 'failed')->count() }}</p>
+            <p class="mt-2 text-3xl font-semibold text-gray-900 font-heading tabular-nums">{{ $totalCount - $completedCount - $pendingCount }}</p>
         </div>
     </div>
 </div>
@@ -155,39 +173,51 @@
             </thead>
             <tbody class="bg-white">
                 @forelse($payments as $payment)
+                <?php 
+                    // Convert to object if array
+                    $p = is_array($payment) ? (object)$payment : $payment;
+                    $property = null;
+                    if (isset($p->property)) {
+                        $property = is_array($p->property) ? (object)$p->property : $p->property;
+                    }
+                    $user = null;
+                    if (isset($p->user)) {
+                        $user = is_array($p->user) ? (object)$p->user : $p->user;
+                    }
+                ?>
                 <tr class="group border-b border-gray-50 hover:bg-gray-50/50 transition-all duration-200">
                     <td class="px-8 py-6">
-                        <div class="text-sm font-medium text-gray-900">{{ $payment->transaction_id }}</div>
-                        <div class="text-sm text-gray-600 mt-1">{{ ucfirst($payment->type) }}</div>
+                        <div class="text-sm font-medium text-gray-900">{{ $p->transaction_id ?? 'N/A' }}</div>
+                        <div class="text-sm text-gray-600 mt-1">{{ ucfirst($p->type ?? 'payment') }}</div>
                     </td>
                     <td class="px-6 py-6">
-                        <div class="text-sm font-medium text-gray-900">{{ $payment->user->name }}</div>
-                        <div class="text-sm text-gray-600 mt-1">{{ $payment->user->email }}</div>
+                        <div class="text-sm font-medium text-gray-900">{{ $user->name ?? 'Unknown' }}</div>
+                        <div class="text-sm text-gray-600 mt-1">{{ $user->email ?? 'No email' }}</div>
                     </td>
                     <td class="px-6 py-6">
-                        <div class="text-sm font-medium text-gray-900">{{ Str::limit($payment->property->title, 30) }}</div>
-                        <div class="text-sm text-gray-600 mt-1">${{ number_format($payment->property->price) }}</div>
+                        <div class="text-sm font-medium text-gray-900">{{ Str::limit($property->title ?? 'Property', 30) }}</div>
+                        <div class="text-sm text-gray-600 mt-1">{{ format_naira($property->price ?? 0) }}</div>
                     </td>
                     <td class="px-6 py-6">
-                        <div class="text-sm font-medium text-gray-900">${{ number_format($payment->amount) }}</div>
-                        <div class="text-sm text-gray-600 mt-1">{{ $payment->currency }}</div>
+                        <div class="text-sm font-medium text-gray-900">{{ format_naira($p->amount ?? 0) }}</div>
+                        <div class="text-sm text-gray-600 mt-1">{{ $p->currency ?? 'NGN' }}</div>
                     </td>
                     <td class="px-6 py-6">
                         <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
-                            {{ ucfirst($payment->payment_method) }}
+                            {{ ucfirst($p->payment_method ?? 'card') }}
                         </span>
                     </td>
                     <td class="px-6 py-6">
                         <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium border
-                            {{ $payment->status === 'completed' ? 'bg-green-50 text-green-700 border-green-200' : 
-                               ($payment->status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 
-                               ($payment->status === 'failed' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-gray-100 text-gray-800 border-gray-200')) }}">
-                            {{ ucfirst($payment->status) }}
+                            {{ ($p->status ?? 'pending') === 'completed' ? 'bg-green-50 text-green-700 border-green-200' : 
+                               (($p->status ?? 'pending') === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 
+                               (($p->status ?? 'pending') === 'failed' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-gray-100 text-gray-800 border-gray-200')) }}">
+                            {{ ucfirst($p->status ?? 'pending') }}
                         </span>
                     </td>
                     <td class="px-6 py-6 text-sm text-gray-600">
-                        <div class="font-medium">{{ $payment->created_at->format('M d, Y') }}</div>
-                        <div class="text-xs text-gray-500 mt-1">{{ $payment->created_at->format('h:i A') }}</div>
+                        <div class="font-medium">{{ isset($p->created_at) ? date('M d, Y', strtotime($p->created_at)) : 'N/A' }}</div>
+                        <div class="text-xs text-gray-500 mt-1">{{ isset($p->created_at) ? date('h:i A', strtotime($p->created_at)) : '' }}</div>
                     </td>
                 </tr>
                 @empty
@@ -209,10 +239,6 @@
         </table>
     </div>
     
-    @if($payments->hasPages())
-    <div class="bg-gray-50/50 px-8 py-5 border-t border-gray-100">
-        {{ $payments->links() }}
-    </div>
-    @endif
+    {{-- Pagination removed - Supabase returns arrays not paginated collections --}}
 </div>
 @endsection

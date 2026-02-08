@@ -55,7 +55,7 @@
             <div class="hidden lg:block lg:col-span-4 self-end animate-reveal [animation-delay:0.6s]">
                 <div class="glass-premium p-10 rounded-[50px] exceptional-shadow text-white space-y-8 max-w-[340px] ml-auto">
                     <div class="flex justify-between items-start">
-                        <span class="text-[10px] font-bold uppercase tracking-[0.3em] opacity-60">Since 2024</span>
+                        <span class="text-[10px] font-bold uppercase tracking-[0.3em] opacity-60">Since {{ date('Y') }}</span>
                         <div class="flex items-center gap-2">
                              <div class="w-2 h-2 rounded-full bg-accent-500 animate-pulse"></div>
                              <span class="text-[10px] font-bold uppercase tracking-[0.3em] text-accent-400">Verified Excellence</span>

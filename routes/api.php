@@ -1,10 +1,8 @@
 <?php
 
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\DashboardController;
-use App\Http\Controllers\Api\PaymentController;
-use App\Http\Controllers\Api\PropertyController;
-use App\Http\Controllers\Api\SavedPropertyController;
+use App\Http\Controllers\Api\SupabaseAuthController;
+use App\Http\Controllers\Api\SupabasePropertyController;
+use App\Http\Controllers\Api\SupabaseSavedPropertyController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -21,80 +19,43 @@ use Illuminate\Support\Facades\Route;
 
 // Public routes with rate limiting
 Route::middleware(['throttle:10,1'])->group(function () {
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
-    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+    Route::post('/register', [SupabaseAuthController::class, 'register']);
+    Route::post('/login', [SupabaseAuthController::class, 'login']);
+    Route::post('/forgot-password', [SupabaseAuthController::class, 'forgotPassword']);
+    Route::post('/reset-password', [SupabaseAuthController::class, 'resetPassword']);
 });
 
 // Public property routes (higher limit for browsing)
 Route::middleware(['throttle:100,1'])->group(function () {
-    Route::get('/properties', [PropertyController::class, 'index']);
-    Route::get('/properties/{id}', [PropertyController::class, 'show']);
-    Route::get('/properties/featured/list', [PropertyController::class, 'featured']);
-});
-
-// Public dashboard overview
-Route::middleware(['throttle:60,1'])->group(function () {
-    Route::get('/overview', [DashboardController::class, 'overview']);
+    Route::get('/properties', [SupabasePropertyController::class, 'index']);
+    Route::get('/properties/{id}', [SupabasePropertyController::class, 'show']);
+    Route::get('/properties/featured/list', [SupabasePropertyController::class, 'featured']);
 });
 
 // Protected routes
 Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
     // Authentication routes
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/profile', [AuthController::class, 'profile']);
-    Route::put('/profile', [AuthController::class, 'updateProfile']);
-    Route::put('/change-password', [AuthController::class, 'changePassword']);
-    
-    // Email verification
-    Route::post('/email/verification-notification', [AuthController::class, 'sendVerificationEmail']);
-    Route::post('/email/verify', [AuthController::class, 'verifyEmail']);
+    Route::post('/logout', [SupabaseAuthController::class, 'logout']);
+    Route::get('/profile', [SupabaseAuthController::class, 'profile']);
+    Route::put('/profile', [SupabaseAuthController::class, 'updateProfile']);
+    Route::put('/change-password', [SupabaseAuthController::class, 'changePassword']);
 
     // Property management (Admin only)
     Route::middleware('admin')->group(function () {
-        Route::post('/properties', [PropertyController::class, 'store']);
-        Route::put('/properties/{id}', [PropertyController::class, 'update']);
-        Route::delete('/properties/{id}', [PropertyController::class, 'destroy']);
-        Route::post('/properties/{id}/images', [PropertyController::class, 'uploadImages']);
+        Route::post('/properties', [SupabasePropertyController::class, 'store']);
+        Route::put('/properties/{id}', [SupabasePropertyController::class, 'update']);
+        Route::delete('/properties/{id}', [SupabasePropertyController::class, 'destroy']);
     });
 
     // Saved properties
     Route::prefix('saved-properties')->group(function () {
-        Route::get('/', [SavedPropertyController::class, 'index']);
-        Route::post('/', [SavedPropertyController::class, 'store']);
-        Route::delete('/{propertyId}', [SavedPropertyController::class, 'destroy']);
-        Route::get('/check/{propertyId}', [SavedPropertyController::class, 'check']);
-        Route::post('/toggle', [SavedPropertyController::class, 'toggle']);
-    });
-
-    // Payments
-    Route::prefix('payments')->group(function () {
-        Route::get('/', [PaymentController::class, 'index']);
-        Route::post('/', [PaymentController::class, 'store']);
-        Route::get('/{id}', [PaymentController::class, 'show']);
-        
-        // Admin payment routes
-        Route::middleware('admin')->group(function () {
-            Route::get('/admin/all', [PaymentController::class, 'adminIndex']);
-            Route::get('/admin/statistics', [PaymentController::class, 'statistics']);
-        });
-    });
-
-    // Dashboard
-    Route::prefix('dashboard')->group(function () {
-        Route::get('/user', [DashboardController::class, 'userStats']);
-        
-        // Admin dashboard
-        Route::middleware('admin')->group(function () {
-            Route::get('/admin', [DashboardController::class, 'adminStats']);
-        });
+        Route::get('/', [SupabaseSavedPropertyController::class, 'index']);
+        Route::post('/', [SupabaseSavedPropertyController::class, 'store']);
+        Route::delete('/{propertyId}', [SupabaseSavedPropertyController::class, 'destroy']);
+        Route::get('/check/{propertyId}', [SupabaseSavedPropertyController::class, 'check']);
+        Route::post('/toggle', [SupabaseSavedPropertyController::class, 'toggle']);
     });
 });
-
-// Payment verification webhook (protected)
-Route::post('/payments/verify/{transactionId}', [PaymentController::class, 'verify'])
-    ->middleware('webhook.signature');
 
 // Fallback route for API
 Route::fallback(function () {

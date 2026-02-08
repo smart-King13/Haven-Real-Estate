@@ -42,17 +42,23 @@
                     <div class="flex flex-col md:flex-row md:items-center gap-8 p-6 bg-gray-50/50 rounded-2xl border border-gray-100">
                         <div class="relative group">
                             <div class="h-24 w-24 rounded-2xl overflow-hidden border-4 border-white shadow-xl ring-1 ring-gray-100 mb-4 md:mb-0">
-                                @if($user->avatar && Illuminate\Support\Facades\Storage::disk('public')->exists($user->avatar))
-                                    <img class="h-full w-full object-cover" src="{{ asset('storage/' . $user->avatar) }}" alt="{{ $user->name }}">
+                                @if(isset($profile->avatar) && $profile->avatar)
+                                    <img class="h-full w-full object-cover" src="{{ asset('storage/' . $profile->avatar) }}?v={{ time() }}" alt="{{ $profile->name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <div class="h-full w-full bg-primary-900 flex items-center justify-center text-3xl font-semibold text-white" style="display: none;">
+                                        {{ substr($profile->name ?? 'U', 0, 1) }}
+                                    </div>
                                 @else
                                     <div class="h-full w-full bg-primary-900 flex items-center justify-center text-3xl font-semibold text-white">
-                                        {{ substr($user->name, 0, 1) }}
+                                        {{ substr($profile->name ?? 'U', 0, 1) }}
                                     </div>
                                 @endif
                             </div>
                         </div>
                         <div class="flex-1 space-y-2">
                             <label class="block text-sm font-semibold text-gray-900 uppercase tracking-wider">Profile Picture</label>
+                            @if(isset($profile->avatar) && $profile->avatar)
+                                <p class="text-xs text-gray-500 mb-2">Current: {{ $profile->avatar }}</p>
+                            @endif
                             <input type="file" name="avatar" id="avatar" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-primary-900 file:text-white hover:file:bg-primary-800 transition-all cursor-pointer">
                             <p class="text-xs text-gray-400">Recommended: Square JPG or PNG. Max size 2MB.</p>
                             @error('avatar') <p class="text-xs text-red-600 mt-1 ml-1">{{ $message }}</p> @enderror
@@ -63,7 +69,7 @@
                         <!-- Name -->
                         <div class="space-y-2">
                             <label for="name" class="block text-sm font-semibold text-gray-700 ml-1">Full Name</label>
-                            <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}" required
+                            <input type="text" name="name" id="name" value="{{ old('name', $profile->name ?? '') }}" required
                                    class="w-full px-5 py-4 rounded-xl bg-gray-50 border-gray-100 focus:bg-white focus:ring-2 focus:ring-primary-900/10 focus:border-primary-900 transition-all @error('name') border-red-500 @enderror">
                             @error('name') <p class="text-xs text-red-600 mt-1 ml-1">{{ $message }}</p> @enderror
                         </div>
@@ -71,32 +77,24 @@
                         <!-- Email -->
                         <div class="space-y-2">
                             <label for="email" class="block text-sm font-semibold text-gray-700 ml-1">Email Address</label>
-                            <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}" required
-                                   class="w-full px-5 py-4 rounded-xl bg-gray-50 border-gray-100 focus:bg-white focus:ring-2 focus:ring-primary-900/10 focus:border-primary-900 transition-all @error('email') border-red-500 @enderror">
-                            @error('email') <p class="text-xs text-red-600 mt-1 ml-1">{{ $message }}</p> @enderror
+                            <input type="email" name="email" id="email" value="{{ old('email', $profile->email ?? '') }}" readonly disabled
+                                   class="w-full px-5 py-4 rounded-xl bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed">
+                            <p class="text-xs text-gray-400 ml-1">Email cannot be changed</p>
                         </div>
 
                         <!-- Phone -->
                         <div class="space-y-2">
                             <label for="phone" class="block text-sm font-semibold text-gray-700 ml-1">Phone Number</label>
-                            <input type="tel" name="phone" id="phone" value="{{ old('phone', $user->phone) }}"
+                            <input type="tel" name="phone" id="phone" value="{{ old('phone', $profile->phone ?? '') }}"
                                    class="w-full px-5 py-4 rounded-xl bg-gray-50 border-gray-100 focus:bg-white focus:ring-2 focus:ring-primary-900/10 focus:border-primary-900 transition-all">
                         </div>
 
                         <!-- Address -->
                         <div class="space-y-2">
                             <label for="address" class="block text-sm font-semibold text-gray-700 ml-1">Address</label>
-                            <input type="text" name="address" id="address" value="{{ old('address', $user->address ?? '') }}"
+                            <input type="text" name="address" id="address" value="{{ old('address', $profile->address ?? '') }}"
                                    class="w-full px-5 py-4 rounded-xl bg-gray-50 border-gray-100 focus:bg-white focus:ring-2 focus:ring-primary-900/10 focus:border-primary-900 transition-all">
                         </div>
-                    </div>
-
-                    <!-- Bio -->
-                    <div class="space-y-2">
-                        <label for="bio" class="block text-sm font-semibold text-gray-700 ml-1">Bio</label>
-                        <textarea name="bio" id="bio" rows="4"
-                                  class="w-full px-5 py-4 rounded-xl bg-gray-50 border-gray-100 focus:bg-white focus:ring-2 focus:ring-primary-900/10 focus:border-primary-900 transition-all placeholder:text-gray-300"
-                                  placeholder="Write a brief summary about yourself...">{{ old('bio', $user->bio) }}</textarea>
                     </div>
 
                     <div class="flex justify-end pt-8 border-t border-gray-50">
@@ -104,6 +102,13 @@
                             Save Changes
                         </button>
                     </div>
+                    
+                    @if(session('debug_info'))
+                        <div class="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
+                            <p class="text-xs font-semibold text-blue-900 mb-2">Debug Information:</p>
+                            <pre class="text-xs text-blue-800">{{ json_encode(session('debug_info'), JSON_PRETTY_PRINT) }}</pre>
+                        </div>
+                    @endif
                 </form>
             </div>
         </div>
@@ -132,7 +137,7 @@
                                 </div>
                                 <span class="text-sm text-gray-600">Joined</span>
                             </div>
-                            <span class="text-sm font-semibold text-gray-900">{{ $user->created_at->format('M d, Y') }}</span>
+                            <span class="text-sm font-semibold text-gray-900">{{ $profile->created_at ? date('M d, Y', strtotime($profile->created_at)) : 'N/A' }}</span>
                         </div>
                         <div class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
                             <div class="flex items-center gap-3">

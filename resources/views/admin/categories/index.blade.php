@@ -32,25 +32,29 @@
 <!-- Categories Grid -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     @forelse($categories as $category)
+    <?php 
+        // Convert to object if array
+        $cat = is_array($category) ? (object)$category : $category;
+    ?>
     <div class="bg-white shadow-xl shadow-gray-200/60 rounded-3xl p-8 border border-gray-50 hover:shadow-2xl hover:shadow-accent-600/10 transition-all duration-300 transform hover:-translate-y-1">
         <div class="flex items-start justify-between mb-4">
             <div class="flex-1">
-                <h3 class="text-lg font-medium text-gray-900 mb-2">{{ $category->name }}</h3>
-                @if($category->description)
-                    <p class="text-sm text-gray-600 leading-relaxed">{{ $category->description }}</p>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">{{ $cat->name ?? 'Unnamed' }}</h3>
+                @if(isset($cat->description) && $cat->description)
+                    <p class="text-sm text-gray-600 leading-relaxed">{{ $cat->description }}</p>
                 @else
                     <p class="text-sm text-gray-500 italic">No description provided</p>
                 @endif
             </div>
             <div class="flex items-center space-x-1 ml-4">
-                <button onclick="editCategory({{ $category->id }}, '{{ $category->name }}', '{{ $category->description }}')" 
+                <button onclick="editCategory('{{ $cat->id }}', '{{ addslashes($cat->name ?? '') }}', '{{ addslashes($cat->description ?? '') }}')" 
                         class="inline-flex items-center justify-center w-8 h-8 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors duration-150"
                         title="Edit Category">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                     </svg>
                 </button>
-                <button onclick="deleteCategory({{ $category->id }}, '{{ $category->name }}')" 
+                <button onclick="deleteCategory('{{ $cat->id }}', '{{ addslashes($cat->name ?? 'category') }}')" 
                         class="inline-flex items-center justify-center w-8 h-8 rounded-md text-gray-600 hover:text-red-600 hover:bg-red-50 transition-colors duration-150"
                         title="Delete Category">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -63,7 +67,7 @@
         <div class="pt-4 border-t border-gray-50 flex items-center justify-between">
             <span class="text-xs font-semibold text-gray-400 uppercase tracking-widest">Linked Listings</span>
             <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-accent-50 text-accent-700 border border-accent-100">
-                {{ $category->properties_count }} {{ Str::plural('property', $category->properties_count) }}
+                {{ $cat->properties_count ?? 0 }} {{ Str::plural('property', $cat->properties_count ?? 0) }}
             </span>
         </div>
     </div>

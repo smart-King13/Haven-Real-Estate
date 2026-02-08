@@ -64,7 +64,7 @@
                                 @endphp
                                 <div class="font-bold text-green-600 text-xl">₦{{ number_format($processedAmount, 2) }}</div>
                                 <div class="text-sm text-gray-500">
-                                    (${{{ number_format($conversion['original_amount'], 2) }} USD @ ₦{{ number_format($conversion['exchange_rate'], 2) }})
+                                    (₦{{ number_format($conversion['original_amount'], 2) }})
                                 </div>
                                 @if(isset($conversion['test_mode_amount']) && $conversion['test_mode_amount'])
                                     <div class="text-xs text-yellow-600 mt-1 font-medium">
@@ -72,7 +72,7 @@
                                     </div>
                                 @endif
                             @else
-                                <span class="font-bold text-green-600 text-xl">${{ number_format($payment->amount, 2) }}</span>
+                                <span class="font-bold text-green-600 text-xl">{{ format_naira($payment->amount) }}</span>
                             @endif
                         </div>
                     </div>

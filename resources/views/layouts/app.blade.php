@@ -7,6 +7,11 @@
 
     <title>@yield('title', 'Haven - Premium Real Estate Management & Listings')</title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('images/haven-logo.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('images/haven-logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/haven-logo.png') }}">
+
     <!-- SEO Meta Tags -->
     <meta name="description" content="@yield('meta_description', 'Discover your dream home with Haven. Premium real estate listings, verified properties, and seamless property management services.')">
     <meta name="keywords" content="real estate, property management, luxury homes, rent, sale, Haven real estate">
@@ -116,7 +121,7 @@
 
         <!-- Live Chat Component (only on public pages) -->
         @if(!request()->is('dashboard*') && !request()->is('admin*'))
-            @include('components.live-chat-enhanced')
+            @include('components.live-chat')
         @endif
 
         <!-- Footer -->

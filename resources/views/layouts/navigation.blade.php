@@ -1,10 +1,10 @@
 <nav x-data="{ open: false, scrolled: false }" 
      @scroll.window="scrolled = (window.pageYOffset > 50)"
      x-init="$watch('open', value => document.body.style.overflow = value ? 'hidden' : '')"
-     class="fixed top-0 left-0 right-0 z-50 transition-all duration-700" id="navbar">
+     class="fixed top-0 left-0 right-0 z-50 transition-all duration-700 px-4 lg:px-8 pt-4" id="navbar">
     
-    <div :class="{ 'bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] border-gray-100 rounded-b-[30px]': scrolled, 'bg-transparent border-transparent': !scrolled }"
-         class="max-w-[1600px] mx-auto flex items-center justify-between px-6 lg:px-10 py-4 transition-all duration-700">
+    <div :class="{ 'bg-white/95 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] border-gray-200/50': scrolled, 'bg-white/10 backdrop-blur-md border-white/20': !scrolled }"
+         class="max-w-[1600px] mx-auto flex items-center justify-between px-6 lg:px-10 py-4 transition-all duration-700 rounded-3xl border">
         
         <!-- Logo: Brand Architecture -->
         <div class="flex items-center shrink-0">
@@ -49,19 +49,26 @@
 
         <!-- Right Side: Action & Auth -->
         <div class="hidden lg:flex items-center gap-8">
-            @auth
+            @if(session('supabase_user'))
+                <?php 
+                    $profile = session('supabase_profile');
+                    $user = session('supabase_user');
+                    $userName = $profile->name ?? $user->email ?? 'User';
+                    $userEmail = $user->email ?? '';
+                    $userAvatar = $profile->avatar ?? null;
+                ?>
                 <div class="relative" x-data="{ dropdownOpen: false }">
                     <button @click="dropdownOpen = !dropdownOpen" 
-                            :class="{ 'text-primary-950': scrolled, 'text-white': !scrolled }"
-                            class="flex items-center gap-3 py-2 px-4 rounded-full bg-primary-950/5 hover:bg-primary-950/10 transition-all border border-transparent hover:border-accent-500/20">
+                            :class="{ 'bg-primary-950/5 hover:bg-primary-950/10 border-primary-950/10': scrolled, 'bg-white/10 hover:bg-white/20 border-white/20': !scrolled }"
+                            class="flex items-center gap-3 py-2 px-4 rounded-full transition-all border">
                         <div class="h-8 w-8 rounded-full bg-accent-600 flex items-center justify-center text-[10px] font-black text-white overflow-hidden">
-                            @if(Auth::user()->avatar)
-                                <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}" class="h-full w-full object-cover">
+                            @if($userAvatar)
+                                <img src="{{ asset('storage/' . $userAvatar) }}?v={{ time() }}" alt="{{ $userName }}" class="h-full w-full object-cover">
                             @else
-                                {{ substr(Auth::user()->name, 0, 1) }}
+                                {{ substr($userName, 0, 1) }}
                             @endif
                         </div>
-                        <span class="text-[10px] font-black uppercase tracking-widest">{{ Auth::user()->name }}</span>
+                        <span :class="{ 'text-primary-950': scrolled, 'text-white': !scrolled }" class="text-[10px] font-black uppercase tracking-widest">{{ $userName }}</span>
                     </button>
                     <div x-show="dropdownOpen" @click.away="dropdownOpen = false" 
                          x-transition:enter="transition ease-out duration-200"
@@ -74,12 +81,12 @@
                          style="display: none;">
                         <div class="px-5 py-4 border-b border-gray-50 bg-gray-50/50">
                             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Signed in as</p>
-                            <p class="text-sm font-bold text-gray-900 truncate">{{ Auth::user()->name }}</p>
-                            <p class="text-xs text-gray-500 truncate">{{ Auth::user()->email }}</p>
+                            <p class="text-sm font-bold text-gray-900 truncate">{{ $userName }}</p>
+                            <p class="text-xs text-gray-500 truncate">{{ $userEmail }}</p>
                         </div>
                         
                         <div class="py-1">
-                            @if(auth()->user()->isAdmin())
+                            @if(($profile->role ?? 'user') === 'admin')
                                 <a href="{{ route('admin.dashboard') }}" class="flex items-center px-5 py-3 text-sm text-gray-600 hover:bg-gray-50 hover:text-accent-600 transition-colors">
                                     <svg class="h-4 w-4 mr-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
                                     {{ __('Superadmin Panel') }}
@@ -116,7 +123,7 @@
                    class="px-8 py-3 bg-accent-600 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-full hover:bg-accent-500 transition-all duration-500 shadow-xl">
                     Get Started
                 </a>
-            @endauth
+            @endif
         </div>
 
         <!-- Hamburger (Mobile) -->
@@ -190,12 +197,18 @@
             <!-- Account -->
             <div class="space-y-6 pt-6 border-t border-white/5">
                 <div class="text-[9px] font-black uppercase tracking-[0.5em] text-accent-500/60 pb-3 border-b border-white/5">Account</div>
-                @auth
+                @if(session('supabase_user'))
+                    <?php 
+                        $profile = session('supabase_profile');
+                        $user = session('supabase_user');
+                        $userName = $profile->name ?? $user->email ?? 'User';
+                        $isAdmin = ($profile->role ?? 'user') === 'admin';
+                    ?>
                     <div class="space-y-4">
                         <a href="{{ route('profile.edit') }}" class="block text-xs font-black uppercase tracking-wider text-white hover:text-accent-500 transition-colors">
-                            {{ Auth::user()->name }}
+                            {{ $userName }}
                         </a>
-                        @if(auth()->user()->isAdmin())
+                        @if($isAdmin)
                             <a href="{{ route('admin.dashboard') }}" class="block text-[10px] font-bold text-white/50 uppercase tracking-widest hover:text-accent-500 transition-colors">Superadmin Panel</a>
                         @else
                             <a href="{{ route('user.dashboard') }}" class="block text-[10px] font-bold text-white/50 uppercase tracking-widest hover:text-accent-500 transition-colors">My Dashboard</a>
@@ -214,7 +227,7 @@
                             <a href="{{ route('register') }}" class="px-5 py-3 bg-accent-600 text-white font-black uppercase tracking-widest text-center rounded-2xl hover:bg-accent-700 transition-all shadow-xl shadow-accent-600/20 text-[10px]">Sign Up</a>
                         @endif
                     </div>
-                @endauth
+                @endif
             </div>
         </div>
 
