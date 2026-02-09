@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Mail;
 // Email test route moved to line 139
 
 // Test route for debugging saved properties
+/*
 Route::get('/test-saved-properties', function () {
     try {
         $user = auth()->user();
@@ -53,6 +54,7 @@ Route::get('/test-saved-properties', function () {
         ]);
     }
 })->middleware('auth');
+*/
 
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -82,6 +84,7 @@ Route::get('/debug-csrf', function () {
     ];
 });
 
+/*
 Route::get('/create-test-user/{email}', function ($email) {
     try {
         // Check if user already exists
@@ -125,6 +128,7 @@ Route::get('/test-password-reset', function () {
         return 'Error: ' . $e->getMessage();
     }
 });
+*/
 
 // Test email functionality
 Route::get('/test-email', function (Request $request) {

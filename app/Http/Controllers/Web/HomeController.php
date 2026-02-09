@@ -213,6 +213,18 @@ class HomeController extends Controller
             'message' => 'Haven Real Estate API is running',
             'version' => '1.0.0',
             'timestamp' => now()->toISOString(),
+            'debug' => [
+                'app_env' => config('app.env'),
+                'app_debug' => config('app.debug'),
+                'app_url' => config('app.url'),
+                'supabase_url_set' => !empty(config('services.supabase.url')),
+                'supabase_key_set' => !empty(config('services.supabase.key')),
+                'db_connection' => config('database.default'),
+                'session_driver' => config('session.driver'),
+                'cache_store' => config('cache.default'),
+                'is_secure' => request()->secure(),
+                'client_ip' => request()->ip(),
+            ]
         ]);
     }
 
