@@ -20,9 +20,9 @@ services:
       - key: SUPABASE_KEY
         sync: false
       - key: APP_KEY
-        generateValue: true
+        sync: false # Set this manually in Render Dashboard using: php artisan key:generate --show
       - key: SESSION_DRIVER
-        value: file
+        value: cookie
       - key: CACHE_STORE
         value: file
       - key: QUEUE_CONNECTION
