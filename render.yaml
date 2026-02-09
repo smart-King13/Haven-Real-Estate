@@ -5,14 +5,18 @@ services:
     dockerContext: .
     dockerfilePath: Dockerfile
     plan: free # Change to starter or higher for production
-    healthCheckPath: /
+    healthCheckPath: /api/status
     envVars:
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
         value: true
+      - key: APP_URL
+        value: https://haven-real-estate.onrender.com
       - key: LOG_CHANNEL
         value: stderr
+      - key: LOG_LEVEL
+        value: debug
       - key: DB_CONNECTION
         value: pgsql
       - key: SUPABASE_URL
