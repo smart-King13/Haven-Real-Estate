@@ -135,9 +135,11 @@ Route::get('/test-email', function (Request $request) {
     try {
         $email = $request->query('email');
         
+        /*
         if (!$email && auth()->check()) {
             $email = auth()->user()->email;
         }
+        */
 
         if (!$email) {
             return response()->json([
@@ -361,7 +363,8 @@ require __DIR__ . '/test-images.php';
 
 // Image diagnostic route
 Route::get('/test-images-laravel', function () {
-    $images = App\Models\PropertyImage::with('property')->get();
+    // $images = App\Models\PropertyImage::with('property')->get();
+    $images = []; // Empty fallback
     
     $html = '<!DOCTYPE html><html><head><title>Laravel Image Test</title></head><body>';
     $html .= '<h1>Laravel Image Diagnostic</h1>';

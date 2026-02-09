@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Payment;
+// use App\Models\Payment;
 use Stripe\Stripe;
 use Stripe\Checkout\Session as StripeSession;
 use Yabacon\Paystack;
@@ -14,7 +14,7 @@ class PaymentGatewayService
     /**
      * Process payment through the selected gateway
      */
-    public function processPayment(Payment $payment, string $gateway)
+    public function processPayment($payment, string $gateway)
     {
         switch ($gateway) {
             case 'stripe':
@@ -29,7 +29,7 @@ class PaymentGatewayService
     /**
      * Process Stripe payment
      */
-    private function processStripePayment(Payment $payment)
+    private function processStripePayment($payment)
     {
         try {
             Stripe::setApiKey(config('services.stripe.secret'));
@@ -92,7 +92,7 @@ class PaymentGatewayService
     /**
      * Process Paystack payment
      */
-    private function processPaystackPayment(Payment $payment)
+    private function processPaystackPayment($payment)
     {
         try {
             $paystack = new Paystack(config('services.paystack.secret'));
@@ -183,7 +183,7 @@ class PaymentGatewayService
     /**
      * Verify payment from webhook or callback
      */
-    public function verifyPayment(Payment $payment, string $gateway, array $data = [])
+    public function verifyPayment($payment, string $gateway, array $data = [])
     {
         switch ($gateway) {
             case 'stripe':
@@ -198,7 +198,7 @@ class PaymentGatewayService
     /**
      * Verify Stripe payment
      */
-    private function verifyStripePayment(Payment $payment, array $data)
+    private function verifyStripePayment($payment, array $data)
     {
         try {
             Stripe::setApiKey(config('services.stripe.secret'));
@@ -231,7 +231,7 @@ class PaymentGatewayService
     /**
      * Verify Paystack payment
      */
-    private function verifyPaystackPayment(Payment $payment, array $data)
+    private function verifyPaystackPayment($payment, array $data)
     {
         try {
             $paystack = new Paystack(config('services.paystack.secret'));

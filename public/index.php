@@ -1,5 +1,23 @@
 <?php
 
+// Early error reporting for debugging Render 500 errors
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
+ini_set('log_errors', '1');
+ini_set('error_log', 'php://stderr');
+
+set_exception_handler(function ($e) {
+    error_log('EARLY FATAL EXCEPTION: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+    error_log($e->getTraceAsString());
+});
+
+register_shutdown_function(function () {
+    $error = error_get_last();
+    if ($error !== null && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        error_log('EARLY FATAL ERROR: ' . $error['message'] . ' in ' . $error['file'] . ':' . $error['line']);
+    }
+});
+
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 
