@@ -338,7 +338,12 @@ class SupabaseAdminDashboardController extends Controller
                 
                 $imagesResponse = $this->supabase->select('property_images', '*', [
                     'property_id' => $prop->id
-                ], ['limit' => 1]);
+                ], ['order' => ['column' => 'is_primary', 'ascending' => false]]);
+                
+                \Log::info('Images for property ' . $prop->id, [
+                    'count' => count($imagesResponse->data ?? []),
+                    'images' => $imagesResponse->data ?? []
+                ]);
                 
                 // Store images back to property
                 if (is_array($property)) {
@@ -938,6 +943,9 @@ class SupabaseAdminDashboardController extends Controller
             $image = $this->supabase->findOne('property_images', ['id' => $imageId]);
             
             if (!$image) {
+                if (request()->expectsJson()) {
+                    return response()->json(['success' => false, 'message' => 'Image not found'], 404);
+                }
                 return back()->with('error', 'Image not found');
             }
 
@@ -966,10 +974,20 @@ class SupabaseAdminDashboardController extends Controller
                 }
             }
 
+            // Return JSON for AJAX requests
+            if (request()->expectsJson()) {
+                return response()->json(['success' => true, 'message' => 'Image deleted successfully!']);
+            }
+
             return back()->with('success', 'Image deleted successfully!');
 
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Delete image error: ' . $e->getMessage());
+            
+            if (request()->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Failed to delete image: ' . $e->getMessage()], 500);
+            }
+            
             return back()->with('error', 'Failed to delete image');
         }
     }

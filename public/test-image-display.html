@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Display Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f5f5f5; }
+        .test { margin: 20px 0; padding: 20px; background: white; border-radius: 8px; }
+        img { max-width: 300px; border: 2px solid #ddd; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>🖼️ Image Display Test</h1>
+    
+    <div class="test">
+        <h2>Test 1: Direct Storage Path</h2>
+        <p><strong>Path:</strong> <code>/storage/properties/1770203558_0.jpg</code></p>
+        <img src="/storage/properties/1770203558_0.jpg" alt="Test Image 1" 
+             onload="this.nextElementSibling.innerHTML='<span class=success>✅ Image loaded successfully!</span>'"
+             onerror="this.nextElementSibling.innerHTML='<span class=error>❌ Failed to load image</span>'">
+        <p></p>
+    </div>
+    
+    <div class="test">
+        <h2>Test 2: Full Public Path</h2>
+        <p><strong>Path:</strong> <code>http://localhost/Haven%20-%20WebApp/public/storage/properties/1770203558_0.jpg</code></p>
+        <img src="http://localhost/Haven%20-%20WebApp/public/storage/properties/1770203558_0.jpg" alt="Test Image 2"
+             onload="this.nextElementSibling.innerHTML='<span class=success>✅ Image loaded successfully!</span>'"
+             onerror="this.nextElementSibling.innerHTML='<span class=error>❌ Failed to load image</span>'">
+        <p></p>
+    </div>
+    
+    <div class="test">
+        <h2>Test 3: Relative Path</h2>
+        <p><strong>Path:</strong> <code>storage/properties/1770203558_0.jpg</code></p>
+        <img src="storage/properties/1770203558_0.jpg" alt="Test Image 3"
+             onload="this.nextElementSibling.innerHTML='<span class=success>✅ Image loaded successfully!</span>'"
+             onerror="this.nextElementSibling.innerHTML='<span class=error>❌ Failed to load image</span>'">
+        <p></p>
+    </div>
+    
+    <div class="test">
+        <h2>Test 4: All Images</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
+            <div>
+                <img src="/storage/properties/1770203558_0.jpg" style="width: 100%;">
+                <p style="font-size: 12px;">1770203558_0.jpg</p>
+            </div>
+            <div>
+                <img src="/storage/properties/1770578843_0.jpg" style="width: 100%;">
+                <p style="font-size: 12px;">1770578843_0.jpg</p>
+            </div>
+            <div>
+                <img src="/storage/properties/6syAzXsdKkg7MPnyt0tE9cjbvJ8ZW6cPbgx5KdM7.jpg" style="width: 100%;">
+                <p style="font-size: 12px;">6syAzXsdKkg7MPnyt0tE9cjbvJ8ZW6cPbgx5KdM7.jpg</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="test">
+        <h2>Debug Info</h2>
+        <p><strong>Current URL:</strong> <span id="currentUrl"></span></p>
+        <p><strong>Base URL:</strong> <span id="baseUrl"></span></p>
+        <script>
+            document.getElementById('currentUrl').textContent = window.location.href;
+            document.getElementById('baseUrl').textContent = window.location.origin + window.location.pathname.replace('/test-image-display.html', '');
+        </script>
+    </div>
+</body>
+</html>

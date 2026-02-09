@@ -229,7 +229,16 @@
                             'solar' => 'Solar Panels',
                             'ev_charging' => 'EV Charging Station',
                         ];
-                        $currentFeatures = old('features', $property->features ?? []);
+                        // Decode features if it's a JSON string
+                        $propertyFeatures = $property->features ?? [];
+                        if (is_string($propertyFeatures)) {
+                            $propertyFeatures = json_decode($propertyFeatures, true) ?? [];
+                        }
+                        $currentFeatures = old('features', $propertyFeatures);
+                        // Ensure it's an array
+                        if (!is_array($currentFeatures)) {
+                            $currentFeatures = [];
+                        }
                     @endphp
                     @foreach($availableFeatures as $key => $label)
                     <div class="flex items-center">
@@ -355,9 +364,35 @@ function setPrimaryImage(imageId) {
 
 function deleteImage(imageId) {
     if (confirm('Are you sure you want to delete this image? This action cannot be undone.')) {
-        const form = document.getElementById('deleteImageForm');
-        form.action = `/admin/properties/{{ $property->id }}/images/${imageId}`;
-        form.submit();
+        // Use fetch API to avoid CSRF token expiration issues
+        fetch(`/admin/properties/{{ $property->id }}/images/${imageId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.status === 419) {
+                alert('Your session has expired. Please refresh the page and try again.');
+                window.location.reload();
+                return;
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data && data.success) {
+                alert('Image deleted successfully!');
+                window.location.reload();
+            } else {
+                alert(data?.message || 'Failed to delete image. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please refresh the page and try again.');
+        });
     }
 }
 </script>

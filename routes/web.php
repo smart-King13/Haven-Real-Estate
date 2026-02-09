@@ -352,6 +352,9 @@ Route::middleware('auth')->group(function () {
     Route::put('/profile', [SupabaseUserDashboardController::class, 'updateProfile'])->name('profile.update');
 });
 
+// Test routes
+require __DIR__ . '/test-images.php';
+
 // Image diagnostic route
 Route::get('/test-images-laravel', function () {
     $images = App\Models\PropertyImage::with('property')->get();

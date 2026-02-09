@@ -66,10 +66,29 @@ if (!function_exists('supabase_storage_url')) {
 if (!function_exists('property_image_url')) {
     /**
      * Get property image URL
+     * Handles both local storage and Supabase storage paths, and direct URLs
      */
-    function property_image_url(string $path): string
+    function property_image_url($pathOrUrl): string
     {
-        return supabase_storage_url('property-images', $path);
+        if (!$pathOrUrl) {
+            return asset('images/placeholder-property.png');
+        }
+        
+        // If it's already a full URL (starts with http:// or https://), return as-is
+        if (preg_match('/^https?:\/\//i', $pathOrUrl)) {
+            return $pathOrUrl;
+        }
+        
+        // Check if path starts with 'properties/' (Supabase format)
+        // or if it's a timestamp-based filename (local storage format)
+        if (preg_match('/^\d+_\d+\.(jpg|jpeg|png|webp)$/i', $pathOrUrl) || 
+            preg_match('/^[a-zA-Z0-9]{40}\.(jpg|jpeg|png|webp)$/i', $pathOrUrl)) {
+            // Local storage format - use asset helper
+            return asset('storage/properties/' . $pathOrUrl);
+        }
+        
+        // Supabase storage format
+        return supabase_storage_url('property-images', $pathOrUrl);
     }
 }
 

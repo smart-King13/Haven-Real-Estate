@@ -18,15 +18,24 @@
 <!-- Property Hero: Immersive Cinematic Reveal -->
 <div class="relative min-h-[70vh] flex items-end overflow-hidden bg-primary-950">
     <!-- Background: Main Property Image -->
-    <div class="absolute inset-0 z-0">
+    <div class="absolute inset-0 z-0 cursor-pointer" onclick="openPropertyModal()">
         @if(count($property->images ?? []) > 0)
             <img src="{{ asset('storage/' . $property->images[0]->image_path) }}" 
                  alt="{{ $property->title }}" 
-                 class="w-full h-full object-cover opacity-60 transform scale-105 animate-slow-zoom">
+                 class="w-full h-full object-cover opacity-60 transform scale-105 animate-slow-zoom hover:opacity-70 transition-opacity">
         @else
             <div class="w-full h-full bg-primary-900 opacity-60"></div>
         @endif
         <div class="absolute inset-0 bg-gradient-to-t from-primary-950 via-primary-950/40 to-transparent"></div>
+        
+        <!-- Click to View Indicator -->
+        <div class="absolute top-6 right-6 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 flex items-center gap-2 text-white text-sm font-medium">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+            Click to view
+        </div>
     </div>
 
     <!-- Hero Content -->

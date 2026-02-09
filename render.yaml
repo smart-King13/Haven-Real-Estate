@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: haven-real-estate
+    env: docker
+    dockerContext: .
+    dockerfilePath: Dockerfile
+    plan: free # Change to starter or higher for production
+    healthCheckPath: /
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: APP_KEY
+        generateValue: true
+      - key: SESSION_DRIVER
+        value: file
+      - key: CACHE_STORE
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - fromGroup: haven-secrets
+
+envVarGroups:
+  - name: haven-secrets
+    envVars:
+      - key: DB_HOST
+      - key: DB_DATABASE
+      - key: DB_USERNAME
+      - key: DB_PASSWORD
+      - key: STRIPE_SECRET
+      - key: PAYSTACK_SECRET_KEY

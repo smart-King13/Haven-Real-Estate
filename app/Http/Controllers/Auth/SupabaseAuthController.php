@@ -59,6 +59,9 @@ class SupabaseAuthController extends Controller
             $request->session()->put('supabase_token', $response->access_token);
             $request->session()->put('supabase_user', $user);
             $request->session()->put('supabase_profile', $profile);
+            
+            // Regenerate session ID for security and extend lifetime
+            $request->session()->regenerate();
 
             // Redirect based on role
             $userRole = is_object($profile) ? $profile->role : ($profile['role'] ?? 'user');
