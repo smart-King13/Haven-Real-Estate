@@ -50,7 +50,30 @@ $app = require_once __DIR__.'/../bootstrap/app.php';
 // Checkpoint 5
 if (isset($_GET['checkpoint'])) echo "Checkpoint 5: App Bootstrapped<br>";
 
-$app->handleRequest(Request::capture());
+try {
+    // Check storage writability
+    if (isset($_GET['checkpoint'])) {
+        $paths = [
+            __DIR__.'/../storage/logs',
+            __DIR__.'/../storage/framework/views',
+            __DIR__.'/../storage/framework/sessions',
+            __DIR__.'/../bootstrap/cache',
+        ];
+        foreach ($paths as $path) {
+            echo "Checking path $path: " . (is_writable($path) ? "Writable<br>" : "NOT WRITABLE<br>");
+        }
+    }
+
+    $app->handleRequest(Request::capture());
+} catch (\Throwable $e) {
+    if (isset($_GET['checkpoint'])) {
+        echo "<h1 style='color:red'>CRITICAL BOOT ERROR</h1>";
+        echo "<strong>" . $e->getMessage() . "</strong><br>";
+        echo "in " . $e->getFile() . ":" . $e->getLine() . "<br>";
+        echo "<pre>" . $e->getTraceAsString() . "</pre>";
+    }
+    throw $e; // Re-throw for normal logging if not in debug mode
+}
 
 // Checkpoint 6
 if (isset($_GET['checkpoint'])) echo "Checkpoint 6: Request Handled<br>";
