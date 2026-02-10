@@ -74,15 +74,37 @@ try {
     $response = $app->handle($request);
     if (isset($_GET['checkpoint'])) echo "Checkpoint 5.4: Request Handled. Response Class: " . get_class($response) . "<br>";
 
-    // Checkpoint 5.5: Sending Response
-    if (isset($_GET['checkpoint'])) echo "Checkpoint 5.5: Sending Response...<br>";
-    $response->send();
-    if (isset($_GET['checkpoint'])) echo "Checkpoint 5.6: Response Sent.<br>";
+    // Checkpoint 5.5: Response Ready
+    if (isset($_GET['checkpoint'])) {
+        echo "Checkpoint 5.5: Response Object Ready.<br>";
+        echo "<strong>Headers waiting to be sent:</strong><pre>";
+        print_r($response->headers->all());
+        echo "</pre>";
+    }
 
-    // Checkpoint 5.7: Termination
-    if (isset($_GET['checkpoint'])) echo "Checkpoint 5.7: Terminating App...<br>";
+    // Checkpoint 5.6: Sending Headers Manually
+    if (isset($_GET['checkpoint'])) echo "Checkpoint 5.6: Sending Headers...<br>";
+    
+    // We can't actually send headers if we already echoed checkpoints, 
+    // but let's see if the logic ITSELF crashes.
+    try {
+        $response->sendHeaders();
+    } catch (\Throwable $e) {
+        if (isset($_GET['checkpoint'])) echo "<strong style='color:red'>CRASH IN sendHeaders(): " . $e->getMessage() . "</strong><br>";
+        throw $e;
+    }
+
+    if (isset($_GET['checkpoint'])) echo "Checkpoint 5.7: Headers Logic OK (even if not sent).<br>";
+
+    // Checkpoint 5.8: Sending Content
+    if (isset($_GET['checkpoint'])) echo "Checkpoint 5.8: Sending Content...<br>";
+    $response->sendContent();
+    if (isset($_GET['checkpoint'])) echo "Checkpoint 5.9: Content Sent.<br>";
+
+    // Checkpoint 5.10: Termination
+    if (isset($_GET['checkpoint'])) echo "Checkpoint 5.10: Terminating App...<br>";
     $app->terminate($request, $response);
-    if (isset($_GET['checkpoint'])) echo "Checkpoint 5.8: App Terminated.<br>";
+    if (isset($_GET['checkpoint'])) echo "Checkpoint 5.11: App Terminated.<br>";
 
 } catch (\Throwable $e) {
     if (isset($_GET['checkpoint'])) {
