@@ -64,7 +64,26 @@ try {
         }
     }
 
-    $app->handleRequest(Request::capture());
+    // Checkpoint 5.1: Request Capture
+    if (isset($_GET['checkpoint'])) echo "Checkpoint 5.1: Capturing Request...<br>";
+    $request = Request::capture();
+    if (isset($_GET['checkpoint'])) echo "Checkpoint 5.2: Request Captured. Class: " . get_class($request) . "<br>";
+
+    // Checkpoint 5.3: Kernel Handling
+    if (isset($_GET['checkpoint'])) echo "Checkpoint 5.3: Handling Request (Kernel)...<br>";
+    $response = $app->handle($request);
+    if (isset($_GET['checkpoint'])) echo "Checkpoint 5.4: Request Handled. Response Class: " . get_class($response) . "<br>";
+
+    // Checkpoint 5.5: Sending Response
+    if (isset($_GET['checkpoint'])) echo "Checkpoint 5.5: Sending Response...<br>";
+    $response->send();
+    if (isset($_GET['checkpoint'])) echo "Checkpoint 5.6: Response Sent.<br>";
+
+    // Checkpoint 5.7: Termination
+    if (isset($_GET['checkpoint'])) echo "Checkpoint 5.7: Terminating App...<br>";
+    $app->terminate($request, $response);
+    if (isset($_GET['checkpoint'])) echo "Checkpoint 5.8: App Terminated.<br>";
+
 } catch (\Throwable $e) {
     if (isset($_GET['checkpoint'])) {
         echo "<h1 style='color:red'>CRITICAL BOOT ERROR</h1>";
