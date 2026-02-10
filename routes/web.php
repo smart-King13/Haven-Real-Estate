@@ -401,6 +401,10 @@ Route::get('/refresh-csrf', function () {
     ]);
 });
 
+Route::get('/radical-debug', function () {
+    return 'Radical Debug: Framework is ALIVE!';
+});
+
 // Debug profile route
 Route::get('/debug-profile', function () {
     $user = session('supabase_user');
