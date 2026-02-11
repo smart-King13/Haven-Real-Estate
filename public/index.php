@@ -12,12 +12,6 @@ putenv('APP_ENV=local');
 $ENV['APP_DEBUG'] = true;
 $ENV['APP_ENV'] = 'local';
 
-// FORCE DEBUG MODE to see who is generating the 500 Reponse
-putenv('APP_DEBUG=true');
-putenv('APP_ENV=local');
-$ENV['APP_DEBUG'] = true;
-$ENV['APP_ENV'] = 'local';
-
 set_exception_handler(function ($e) {
     error_log('EARLY FATAL EXCEPTION: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
     error_log($e->getTraceAsString());
