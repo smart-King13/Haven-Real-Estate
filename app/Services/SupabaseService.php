@@ -13,9 +13,9 @@ class SupabaseService
 
     public function __construct()
     {
-        $this->url = config('services.supabase.url');
-        $this->key = config('services.supabase.key');
-        $this->serviceKey = config('services.supabase.service_key');
+        $this->url = trim(config('services.supabase.url'));
+        $this->key = trim(config('services.supabase.key'));
+        $this->serviceKey = trim(config('services.supabase.service_key'));
     }
 
     /**
