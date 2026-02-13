@@ -25,7 +25,8 @@ WORKDIR /var/www/html
 COPY . .
 
 # Ensure storage directories exist and have correct permissions
-RUN mkdir -p storage/framework/sessions \
+RUN mkdir -p storage/app/public/properties \
+    storage/framework/sessions \
     storage/framework/views \
     storage/framework/cache \
     storage/logs \
@@ -37,8 +38,11 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Install dependencies (ignoring dev)
 RUN composer install --no-dev --optimize-autoloader
 
+# Create storage link
+RUN php artisan storage:link
+
 # Set permissions
-RUN chown -R www-data:www-data storage bootstrap/cache
+RUN chown -R www-data:www-data storage bootstrap/cache public/storage
 RUN chmod -R 775 storage bootstrap/cache
 
 # Update Apache config to serve from public/ and fix ServerName warning
