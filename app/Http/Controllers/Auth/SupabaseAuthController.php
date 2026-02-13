@@ -38,6 +38,9 @@ class SupabaseAuthController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
+        // DEBUG LOGGING
+        error_log("Attempting login for: " . $request->email);
+
         try {
             $response = $this->supabase->signIn(
                 $request->email,
@@ -73,7 +76,16 @@ class SupabaseAuthController extends Controller
             return redirect()->route('user.dashboard')->with('success', 'Welcome back!');
 
         } catch (\Exception $e) {
+            // EXPLICIT ERROR LOGGING
+            error_log("LOGIN EXCEPTION: " . $e->getMessage());
+            error_log($e->getTraceAsString());
+            
             \Log::error('Login exception: ' . $e->getMessage());
+            
+            if (config('app.debug')) {
+                return "LOGIN ERROR: " . $e->getMessage();
+            }
+            
             return back()->with('error', 'Login failed: ' . $e->getMessage())->withInput();
         }
     }

@@ -213,11 +213,11 @@ Route::get('/test-csrf-api', function () {
     ]);
 });
 
-// Chat routes (disabled - ChatController not implemented yet)
-// Route::post('/chat/send', [App\Http\Controllers\ChatController::class, 'sendMessage'])->name('chat.send');
-// Route::get('/chat/history', [App\Http\Controllers\ChatController::class, 'getChatHistory'])->name('chat.history');
-// Route::post('/chat/read', [App\Http\Controllers\ChatController::class, 'markAsRead'])->name('chat.read');
-// Route::get('/chat/status', [App\Http\Controllers\ChatController::class, 'getOnlineStatus'])->name('chat.status');
+// Chat routes
+Route::post('/chat/send', [App\Http\Controllers\ChatController::class, 'sendMessage'])->name('chat.send');
+Route::get('/chat/history', [App\Http\Controllers\ChatController::class, 'getChatHistory'])->name('chat.history');
+Route::post('/chat/read', [App\Http\Controllers\ChatController::class, 'markAsRead'])->name('chat.read');
+Route::get('/chat/status', [App\Http\Controllers\ChatController::class, 'getOnlineStatus'])->name('chat.status');
 
 // Payment webhook routes (disabled - WebhookController not implemented yet)
 // Route::post('/webhooks/stripe', [App\Http\Controllers\WebhookController::class, 'stripe'])->name('webhooks.stripe');
@@ -399,10 +399,6 @@ Route::get('/refresh-csrf', function () {
     return response()->json([
         'token' => csrf_token()
     ]);
-});
-
-Route::get('/radical-debug', function () {
-    return 'Radical Debug: Framework is ALIVE!';
 });
 
 // Debug profile route
