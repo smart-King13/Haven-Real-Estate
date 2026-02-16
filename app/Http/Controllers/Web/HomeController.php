@@ -210,15 +210,16 @@ class HomeController extends Controller
     {
         return response()->json([
             'success' => true,
-            'message' => 'Haven Real Estate API is running',
-            'version' => '1.0.0',
+            'message' => 'Haven Real Estate API is running (Diagnostic)',
+            'version' => '1.0.0-BETA-4b62f75', 
             'timestamp' => now()->toISOString(),
             'debug' => [
                 'app_env' => config('app.env'),
                 'app_debug' => config('app.debug'),
                 'app_url' => config('app.url'),
-                'raw_env_url' => getenv('APP_URL'),
-                'raw_env_db' => getenv('DB_CONNECTION'),
+                'raw_env_url' => getenv('APP_URL') ?: 'NOT_SET',
+                'raw_env_db' => getenv('DB_CONNECTION') ?: 'NOT_SET',
+                'raw_env_keys' => array_keys($_ENV),
                 'supabase_url_set' => !empty(config('services.supabase.url')),
                 'supabase_key_set' => !empty(config('services.supabase.key')),
                 'db_connection' => config('database.default'),

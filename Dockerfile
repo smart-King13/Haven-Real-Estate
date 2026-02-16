@@ -48,7 +48,9 @@ RUN chmod -R 775 storage bootstrap/cache
 # Update Apache config to serve from public/, allow symlinks, and fix 400 Bad Request (LimitRequestFieldSize)
 RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf \
     && echo "ServerName localhost" >> /etc/apache2/apache2.conf \
-    && echo "LimitRequestFieldSize 16384" >> /etc/apache2/apache2.conf \
+    && echo "LimitRequestFieldSize 65536" >> /etc/apache2/apache2.conf \
+    && echo "LimitRequestLine 65536" >> /etc/apache2/apache2.conf \
+    && echo "PassEnv DB_CONNECTION APP_URL APP_KEY APP_ENV APP_DEBUG SUPABASE_URL SUPABASE_KEY SUPABASE_SERVICE_KEY" >> /etc/apache2/apache2.conf \
     && printf '<Directory /var/www/html/public>\n\tOptions Indexes FollowSymLinks\n\tAllowOverride All\n\tRequire all granted\n</Directory>\n' >> /etc/apache2/apache2.conf
 
 # Clean up any potential cached config/routes and link storage
