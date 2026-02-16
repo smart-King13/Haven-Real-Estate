@@ -66,4 +66,4 @@ RUN apt-get install -y nodejs npm \
     && npm run build
 
 # Start Command
-CMD php artisan migrate --force && apache2-foreground
+CMD php artisan config:clear && php artisan migrate --force && apache2-foreground
