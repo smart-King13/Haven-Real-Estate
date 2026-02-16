@@ -173,7 +173,7 @@
                                      x-transition:leave-start="opacity-100"
                                      x-transition:leave-end="opacity-0">
                                     <img class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" 
-                                         src="{{ asset('storage/' . (is_object($image) ? $image->image_path : $image['image_path'])) }}" 
+                                         src="{{ property_image_url(is_object($image) ? $image->image_path : $image['image_path']) }}" 
                                          alt="{{ $property->title }} - Image {{ $index + 1 }}">
                                 </div>
                                 @endforeach
@@ -221,7 +221,7 @@
                                     $imgPath = is_object($primaryImage) ? $primaryImage->image_path : (is_array($primaryImage) ? $primaryImage['image_path'] : $primaryImage);
                                 @endphp
                                 <img class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300" 
-                                     src="{{ asset('storage/' . $imgPath) }}" 
+                                     src="{{ property_image_url($imgPath) }}" 
                                      alt="{{ $prop->title }}">
                             </div>
                             @else

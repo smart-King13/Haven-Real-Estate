@@ -71,7 +71,7 @@ if (!function_exists('property_image_url')) {
     function property_image_url($pathOrUrl): string
     {
         if (!$pathOrUrl) {
-            return asset('images/placeholder-property.png');
+            return asset('images/properties-hero.png');
         }
         
         // If it's already a full URL (starts with http:// or https://), return as-is
@@ -79,12 +79,19 @@ if (!function_exists('property_image_url')) {
             return $pathOrUrl;
         }
         
-        // Check if path starts with 'properties/' (Supabase format)
-        // or if it's a timestamp-based filename (local storage format)
+        // Check if path matches local storage format (timestamp_index.ext)
         if (preg_match('/^\d+_\d+\.(jpg|jpeg|png|webp)$/i', $pathOrUrl) || 
             preg_match('/^[a-zA-Z0-9]{40}\.(jpg|jpeg|png|webp)$/i', $pathOrUrl)) {
-            // Local storage format - use asset helper
-            return asset('storage/properties/' . $pathOrUrl);
+            
+            $localPath = 'storage/properties/' . $pathOrUrl;
+            
+            // On Render (ephemeral), local files often disappear. Check existence.
+            if (file_exists(public_path($localPath))) {
+                return asset($localPath);
+            }
+            
+            // Fallback to a professional internal image
+            return asset('images/properties-hero.png');
         }
         
         // Supabase storage format

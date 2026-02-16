@@ -20,7 +20,7 @@
     <!-- Background: Main Property Image -->
     <div class="absolute inset-0 z-0 cursor-pointer" onclick="openPropertyModal()">
         @if(count($property->images ?? []) > 0)
-            <img src="{{ asset('storage/' . $property->images[0]->image_path) }}" 
+            <img src="{{ property_image_url($property->images[0]->image_path) }}" 
                  alt="{{ $property->title }}" 
                  class="w-full h-full object-cover opacity-60 transform scale-105 animate-slow-zoom hover:opacity-70 transition-opacity">
         @else
@@ -271,7 +271,7 @@
                     <!-- Image -->
                     <div class="relative aspect-[4/3] overflow-hidden">
                         @if($similar->primaryImage)
-                            <img src="{{ asset('storage/' . $similar->primaryImage->image_path) }}" 
+                            <img src="{{ property_image_url($similar->primaryImage->image_path) }}" 
                                  alt="{{ $similar->title }}" 
                                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                         @else
