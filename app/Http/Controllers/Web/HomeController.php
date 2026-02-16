@@ -211,7 +211,7 @@ class HomeController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Haven Real Estate API is running (Diagnostic)',
-            'version' => '1.0.0-PROD-7db2a54', 
+            'version' => '1.0.1-STABLE-FINAL', 
             'timestamp' => now()->toISOString(),
             'debug' => [
                 'app_env' => config('app.env'),
