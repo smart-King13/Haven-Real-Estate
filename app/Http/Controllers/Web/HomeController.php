@@ -217,6 +217,8 @@ class HomeController extends Controller
                 'app_env' => config('app.env'),
                 'app_debug' => config('app.debug'),
                 'app_url' => config('app.url'),
+                'raw_env_url' => getenv('APP_URL'),
+                'raw_env_db' => getenv('DB_CONNECTION'),
                 'supabase_url_set' => !empty(config('services.supabase.url')),
                 'supabase_key_set' => !empty(config('services.supabase.key')),
                 'db_connection' => config('database.default'),
@@ -224,6 +226,7 @@ class HomeController extends Controller
                 'cache_store' => config('cache.default'),
                 'is_secure' => request()->secure(),
                 'client_ip' => request()->ip(),
+                'apache_header_limit' => $_SERVER['LIMIT_REQUEST_FIELD_SIZE'] ?? 'unknown',
             ]
         ]);
     }
