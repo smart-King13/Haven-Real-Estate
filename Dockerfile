@@ -45,9 +45,10 @@ RUN php artisan storage:link
 RUN chown -R www-data:www-data storage bootstrap/cache public/storage
 RUN chmod -R 775 storage bootstrap/cache
 
-# Update Apache config to serve from public/ and fix ServerName warning
+# Update Apache config to serve from public/ and allow symlinks
 RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf \
-    && echo "ServerName localhost" >> /etc/apache2/apache2.conf
+    && echo "ServerName localhost" >> /etc/apache2/apache2.conf \
+    && printf '<Directory /var/www/html/public>\n\tOptions Indexes FollowSymLinks\n\tAllowOverride All\n\tRequire all granted\n</Directory>\n' >> /etc/apache2/apache2.conf
 
 # Expose port (Render uses 10000 by default or $PORT)
 EXPOSE 80

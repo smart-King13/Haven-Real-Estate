@@ -13,9 +13,10 @@ class SupabaseService
 
     public function __construct()
     {
-        $this->url = trim(config('services.supabase.url'));
-        $this->key = trim(config('services.supabase.key'));
-        $this->serviceKey = trim(config('services.supabase.service_key'));
+        // Use regex to strip ANY whitespace characters (including non-breaking spaces)
+        $this->url = preg_replace('/\s+/', '', config('services.supabase.url'));
+        $this->key = preg_replace('/\s+/', '', config('services.supabase.key'));
+        $this->serviceKey = preg_replace('/\s+/', '', config('services.supabase.service_key'));
     }
 
     /**
