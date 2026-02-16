@@ -45,12 +45,19 @@ RUN php artisan storage:link
 RUN chown -R www-data:www-data storage bootstrap/cache public/storage
 RUN chmod -R 775 storage bootstrap/cache
 
-# Update Apache config to serve from public/ and allow symlinks
+# Update Apache config to serve from public/, allow symlinks, and fix 400 Bad Request (LimitRequestFieldSize)
 RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf \
     && echo "ServerName localhost" >> /etc/apache2/apache2.conf \
+    && echo "LimitRequestFieldSize 16384" >> /etc/apache2/apache2.conf \
     && printf '<Directory /var/www/html/public>\n\tOptions Indexes FollowSymLinks\n\tAllowOverride All\n\tRequire all granted\n</Directory>\n' >> /etc/apache2/apache2.conf
 
-# Expose port (Render uses 10000 by default or $PORT)
+# Clean up any potential cached config/routes and link storage
+RUN php artisan config:clear \
+    && php artisan route:clear \
+    && php artisan view:clear \
+    && php artisan storage:link || true
+
+# Expose port
 EXPOSE 80
 
 # Build assets with Vite
