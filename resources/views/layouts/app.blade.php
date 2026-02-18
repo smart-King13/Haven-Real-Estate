@@ -120,7 +120,15 @@
         </main>
 
         <!-- Live Chat Component (only on public pages) -->
-        @if(!request()->is('dashboard*') && !request()->is('admin*'))
+        <!-- Live Chat Component (only on public pages and non-admin users) -->
+        @php
+            $isAdminUser = false;
+            if (session()->has('supabase_profile')) {
+                $userProfile = session('supabase_profile');
+                $isAdminUser = isset($userProfile->role) && $userProfile->role === 'admin';
+            }
+        @endphp
+        @if(!request()->is('dashboard*') && !request()->is('admin*') && !$isAdminUser)
             @include('components.live-chat')
         @endif
 

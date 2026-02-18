@@ -264,7 +264,7 @@
                         @php
                             $img = is_array($image) ? (object)$image : $image;
                         @endphp
-                        <div class="relative group">
+                        <div class="relative group" id="image-card-{{ $img->id }}">
                             <img src="{{ asset('storage/' . $img->image_path) }}" 
                                  alt="Property Image" 
                                  class="w-full h-32 object-cover rounded-lg border-2 {{ $img->is_primary ? 'border-accent-500' : 'border-gray-200' }}">
@@ -383,8 +383,28 @@ function deleteImage(imageId) {
         })
         .then(data => {
             if (data && data.success) {
-                alert('Image deleted successfully!');
-                window.location.reload();
+                // Remove the image card from the DOM
+                const imageCard = document.getElementById(`image-card-${imageId}`);
+                if (imageCard) {
+                    imageCard.style.transition = 'opacity 0.3s ease-out';
+                    imageCard.style.opacity = '0';
+                    setTimeout(() => {
+                        imageCard.remove();
+                        
+                        // Check if there are any images left
+                        const imagesGrid = imageCard.parentElement;
+                        if (imagesGrid && imagesGrid.children.length === 0) {
+                            // Hide the entire "Current Images" section if no images left
+                            const imagesSection = imagesGrid.closest('.mb-6');
+                            if (imagesSection) {
+                                imagesSection.remove();
+                            }
+                        }
+                    }, 300);
+                }
+                
+                // Show success message without alert
+                console.log('Image deleted successfully!');
             } else {
                 alert(data?.message || 'Failed to delete image. Please try again.');
             }

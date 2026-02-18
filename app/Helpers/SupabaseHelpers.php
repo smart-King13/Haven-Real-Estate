@@ -79,13 +79,27 @@ if (!function_exists('property_image_url')) {
             return $pathOrUrl;
         }
         
-        // Check if path matches local storage format (timestamp_index.ext)
+        // Check if path starts with 'properties/' (local storage format)
+        if (str_starts_with($pathOrUrl, 'properties/')) {
+            // This is a local storage path
+            $localPath = 'storage/' . $pathOrUrl;
+            
+            // Check if file exists locally
+            if (file_exists(public_path($localPath))) {
+                return asset($localPath);
+            }
+            
+            // If not found locally, try Supabase storage
+            return supabase_storage_url('property-images', $pathOrUrl);
+        }
+        
+        // Check if path matches local storage filename format (timestamp_index.ext or hash.ext)
         if (preg_match('/^\d+_\d+\.(jpg|jpeg|png|webp)$/i', $pathOrUrl) || 
             preg_match('/^[a-zA-Z0-9]{40}\.(jpg|jpeg|png|webp)$/i', $pathOrUrl)) {
             
             $localPath = 'storage/properties/' . $pathOrUrl;
             
-            // On Render (ephemeral), local files often disappear. Check existence.
+            // Check if file exists locally
             if (file_exists(public_path($localPath))) {
                 return asset($localPath);
             }
@@ -94,7 +108,7 @@ if (!function_exists('property_image_url')) {
             return asset('images/properties-hero.png');
         }
         
-        // Supabase storage format
+        // Default: assume it's a Supabase storage path
         return supabase_storage_url('property-images', $pathOrUrl);
     }
 }

@@ -197,12 +197,13 @@
 
                     <!-- Secondary Actions -->
                     <div class="grid grid-cols-2 gap-4">
-                        <button class="h-14 bg-accent-600 text-white font-bold text-sm rounded-2xl hover:bg-accent-700 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center">
+                        <a href="{{ route('contact', ['subject' => 'Property Inquiry', 'property' => $property->title, 'message' => 'I am interested in the property: ' . $property->title . ' (' . $property->location . ') priced at ' . format_naira($property->price) . '. Please provide more information.']) }}" 
+                           class="h-14 bg-accent-600 text-white font-bold text-sm rounded-2xl hover:bg-accent-700 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                             </svg>
                             Contact
-                        </button>
+                        </a>
                         
                         @auth
                         <button onclick="toggleSave('{{ $property->slug }}')" 
@@ -391,13 +392,9 @@ function toggleSave(propertySlug) {
     });
 }
 
-function changeMainImage(src) {
-    document.querySelector('#main-image img').src = src;
-}
-
 function showToast(message) {
     const toast = document.createElement('div');
-    toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg z-50';
+    toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg z-50 animate-fade-in-up';
     toast.textContent = message;
     document.body.appendChild(toast);
     
@@ -408,4 +405,162 @@ function showToast(message) {
 </script>
 @endpush
 @endauth
+
+<!-- Full Screen Image Modal -->
+<div id="imageModal" class="fixed inset-0 z-[100] hidden bg-black/95 backdrop-blur-xl transition-all duration-300">
+    <!-- Close Button -->
+    <button onclick="closePropertyModal()" class="absolute top-6 right-6 z-[110] p-2 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all">
+        <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+    </button>
+    
+    <!-- Image Counter -->
+    <div class="absolute top-6 left-6 z-[110] px-4 py-2 bg-black/50 rounded-full text-white font-medium text-sm backdrop-blur-md border border-white/10">
+        <span id="currentImageIndex">1</span> / <span id="totalImages">1</span>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <button onclick="prevImage()" class="absolute left-4 top-1/2 -translate-y-1/2 z-[110] p-4 text-white/70 hover:text-white bg-black/20 hover:bg-black/40 rounded-full transition-all backdrop-blur-sm group">
+        <svg class="w-8 h-8 transform group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+    </button>
+    
+    <button onclick="nextImage()" class="absolute right-4 top-1/2 -translate-y-1/2 z-[110] p-4 text-white/70 hover:text-white bg-black/20 hover:bg-black/40 rounded-full transition-all backdrop-blur-sm group">
+        <svg class="w-8 h-8 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+    </button>
+
+    <!-- Main Image Container -->
+    <div class="w-full h-full flex items-center justify-center p-4 md:p-12">
+        <img id="modalImage" src="" alt="Property View" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl animate-fade-in shadow-black/50">
+        
+        <!-- Loading Spinner -->
+        <div id="imageLoading" class="absolute inset-0 flex items-center justify-center z-[-1]">
+             <svg class="animate-spin h-12 w-12 text-white/30" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+        </div>
+    </div>
+
+    <!-- Thumbnails Strip -->
+    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-[110] max-w-[90vw] overflow-x-auto custom-scrollbar pb-2">
+        <div class="flex gap-2 p-2 bg-black/40 backdrop-blur-md rounded-2xl border border-white/10" id="modalThumbnails">
+            <!-- Thumbnails injected via JS -->
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    // Property Images Configuration
+    const propertyImages = [
+        @if(count($property->images ?? []) > 0)
+            @foreach($property->images as $image)
+                "{{ property_image_url($image->image_path) }}",
+            @endforeach
+        @endif
+    ];
+    
+    let currentIndex = 0;
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    const currentIndexEl = document.getElementById('currentImageIndex');
+    const totalImagesEl = document.getElementById('totalImages');
+    const thumbnailsContainer = document.getElementById('modalThumbnails');
+    const loadingSpinner = document.getElementById('imageLoading');
+
+    function initModal() {
+        if (propertyImages.length === 0) return;
+        
+        totalImagesEl.textContent = propertyImages.length;
+        
+        // Generate Thumbnails
+        thumbnailsContainer.innerHTML = propertyImages.map((src, index) => `
+            <button onclick="goToImage(${index})" 
+                    class="relative w-16 h-12 rounded-lg overflow-hidden border-2 transition-all shrink-0 ${index === currentIndex ? 'border-accent-500 opacity-100 scale-105' : 'border-transparent opacity-60 hover:opacity-100'}">
+                <img src="${src}" class="w-full h-full object-cover">
+            </button>
+        `).join('');
+    }
+
+    function openPropertyModal(index = 0) {
+        if (propertyImages.length === 0) return; // Don't open if no images
+        
+        currentIndex = index;
+        updateModalImage();
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        initModal(); // Re-render thumbnails to highlight correct one
+    }
+
+    function closePropertyModal() {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    function updateModalImage() {
+        // Show loading spinner
+        modalImg.style.opacity = '0';
+        loadingSpinner.style.display = 'flex';
+        
+        // Preload image
+        const tempImg = new Image();
+        tempImg.src = propertyImages[currentIndex];
+        
+        tempImg.onload = function() {
+            modalImg.src = propertyImages[currentIndex];
+            modalImg.style.opacity = '1';
+            loadingSpinner.style.display = 'none';
+        };
+
+        currentIndexEl.textContent = currentIndex + 1;
+        
+        // Update Thumbnails Active State
+        const thumbs = thumbnailsContainer.querySelectorAll('button');
+        thumbs.forEach((btn, idx) => {
+            if(idx === currentIndex) {
+                btn.classList.add('border-accent-500', 'opacity-100', 'scale-105');
+                btn.classList.remove('border-transparent', 'opacity-60');
+                btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            } else {
+                btn.classList.remove('border-accent-500', 'opacity-100', 'scale-105');
+                btn.classList.add('border-transparent', 'opacity-60');
+            }
+        });
+    }
+
+    function nextImage() {
+        if (propertyImages.length <= 1) return;
+        currentIndex = (currentIndex + 1) % propertyImages.length;
+        updateModalImage();
+    }
+
+    function prevImage() {
+        if (propertyImages.length <= 1) return;
+        currentIndex = (currentIndex - 1 + propertyImages.length) % propertyImages.length;
+        updateModalImage();
+    }
+
+    function goToImage(index) {
+        currentIndex = index;
+        updateModalImage();
+    }
+
+    // Keyboard Navigation
+    document.addEventListener('keydown', function(e) {
+        if (modal.classList.contains('hidden')) return;
+        
+        if (e.key === 'Escape') closePropertyModal();
+        if (e.key === 'ArrowRight') nextImage();
+        if (e.key === 'ArrowLeft') prevImage();
+    });
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', initModal);
+</script>
+@endpush
 @endsection

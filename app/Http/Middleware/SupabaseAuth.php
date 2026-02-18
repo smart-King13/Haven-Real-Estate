@@ -61,9 +61,6 @@ class SupabaseAuth
             $request->session()->put('supabase_profile', $profile);
             $request->session()->put('supabase_token', $token);
             
-            // Regenerate session to keep it alive and prevent expiration
-            $request->session()->regenerate(false); // false = don't destroy old session data
-
             return $next($request);
 
         } catch (\Exception $e) {

@@ -31,7 +31,7 @@ class SupabaseService
             'Authorization' => 'Bearer ' . $key,
             'Content-Type' => 'application/json',
             'Prefer' => 'return=representation'
-        ]);
+        ])->withoutVerifying()->timeout(60);
     }
 
     // =====================================================
@@ -197,7 +197,7 @@ class SupabaseService
     /**
      * Select data from table
      */
-    public function select(string $table, string $columns = '*', array $conditions = [], array $options = [])
+    public function select(string $table, string $columns = '*', array $conditions = [], array $options = [], bool $useServiceKey = false)
     {
         try {
             $url = $this->url . '/rest/v1/' . $table;
@@ -252,7 +252,7 @@ class SupabaseService
                 $params['offset'] = $options['offset'];
             }
 
-            $response = $this->http()->get($url, $params);
+            $response = $this->http($useServiceKey)->get($url, $params);
 
             if ($response->successful()) {
                 return (object) ['data' => $response->json()];
@@ -365,10 +365,10 @@ class SupabaseService
     /**
      * Get single record
      */
-    public function findOne(string $table, array $conditions)
+    public function findOne(string $table, array $conditions, bool $useServiceKey = false)
     {
         try {
-            $result = $this->select($table, '*', $conditions, ['limit' => 1]);
+            $result = $this->select($table, '*', $conditions, ['limit' => 1], $useServiceKey);
             $data = $result->data ?? [];
             return !empty($data) ? (object) $data[0] : null;
         } catch (\Exception $e) {

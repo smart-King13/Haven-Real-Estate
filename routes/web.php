@@ -278,6 +278,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/messages', function () {
             return view('user.messages');
         })->name('messages');
+        
+        // Chat routes (for existing live-chat component)
+        Route::post('/chat/send', [App\Http\Controllers\ChatController::class, 'sendMessage'])->name('chat.send');
+        Route::get('/chat/history', [App\Http\Controllers\ChatController::class, 'getChatHistory'])->name('chat.history');
     });
     
     // Admin routes
@@ -289,12 +293,12 @@ Route::middleware('auth')->group(function () {
             return view('admin.chat.index');
         })->name('chat.index');
         
-        // Additional chat routes (disabled - ChatController not implemented yet)
-        // Route::get('/chat/sessions', [App\Http\Controllers\ChatController::class, 'getAdminChatSessions'])->name('chat.sessions');
-        // Route::get('/chat/sessions/{sessionId}/messages', [App\Http\Controllers\ChatController::class, 'getSessionMessages'])->name('chat.messages');
-        // Route::post('/chat/sessions/{sessionId}/send', [App\Http\Controllers\ChatController::class, 'sendAdminMessage'])->name('chat.send');
-        // Route::post('/chat/sessions/{sessionId}/read', [App\Http\Controllers\ChatController::class, 'markAsRead'])->name('chat.mark-read');
-        // Route::get('/chat/statistics', [App\Http\Controllers\ChatController::class, 'getChatStatistics'])->name('chat.statistics');
+        // Chat API routes
+        Route::get('/chat/sessions', [App\Http\Controllers\ChatController::class, 'getAdminChatSessions'])->name('chat.sessions');
+        Route::get('/chat/sessions/{sessionId}/messages', [App\Http\Controllers\ChatController::class, 'getSessionMessages'])->name('chat.messages');
+        Route::post('/chat/sessions/{sessionId}/send', [App\Http\Controllers\ChatController::class, 'sendAdminMessage'])->name('chat.send');
+        Route::post('/chat/sessions/{sessionId}/read', [App\Http\Controllers\ChatController::class, 'markAsRead'])->name('chat.mark-read');
+        Route::get('/chat/statistics', [App\Http\Controllers\ChatController::class, 'getChatStatistics'])->name('chat.statistics');
         
         // Properties management
         Route::prefix('properties')->name('properties.')->group(function () {
@@ -312,6 +316,7 @@ Route::middleware('auth')->group(function () {
         
         // Users management
         Route::get('/users', [SupabaseAdminDashboardController::class, 'users'])->name('users.index');
+        Route::get('/users/{userId}', [SupabaseAdminDashboardController::class, 'showUser'])->name('users.show');
         Route::post('/users/{userId}/toggle-status', [SupabaseAdminDashboardController::class, 'toggleUserStatus'])->name('users.toggle-status');
         
         // Payments management
@@ -389,6 +394,42 @@ Route::get('/test-images-laravel', function () {
     
     return $html;
 });
+
+// Image database diagnostic route
+Route::get('/test-images-db', function (Illuminate\Http\Request $request) {
+    $propertyId = $request->query('property_id');
+    
+    if (!$propertyId) {
+        return response()->json([
+            'error' => 'Please provide a property_id parameter',
+            'usage' => '/test-images-db?property_id=123'
+        ], 400);
+    }
+    
+    $supabase = app(App\Services\SupabaseService::class);
+    
+    try {
+        // Fetch images using service key to bypass RLS
+        $imagesResponse = $supabase->select('property_images', '*', [
+            'property_id' => $propertyId
+        ]);
+        
+        $images = $imagesResponse->data ?? [];
+        
+        return response()->json([
+            'property_id' => $propertyId,
+            'image_count' => count($images),
+            'images' => $images,
+            'timestamp' => now()->toDateTimeString()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'property_id' => $propertyId
+        ], 500);
+    }
+});
+
 // Background texture test route
 Route::get('/test-backgrounds', function () {
     return view('test-backgrounds');

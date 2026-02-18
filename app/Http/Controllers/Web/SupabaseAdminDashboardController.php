@@ -316,6 +316,71 @@ class SupabaseAdminDashboardController extends Controller
     }
 
     /**
+     * Get user details and chat history
+     */
+    public function showUser($id)
+    {
+        try {
+            // Get user profile
+            $user = $this->supabase->findOne('profiles', ['id' => $id]);
+            
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found'
+                ], 404);
+            }
+
+            // Get chat sessions
+            $sessionsResponse = $this->supabase->select('chat_sessions', '*', [
+                'user_id' => $id
+            ], ['order' => ['column' => 'updated_at', 'ascending' => false]]);
+            $sessions = $sessionsResponse->data ?? [];
+
+            // Get messages for the latest session
+            $messages = [];
+            $currentSession = null;
+
+            if (!empty($sessions)) {
+                $currentSession = is_array($sessions[0]) ? (object)$sessions[0] : $sessions[0];
+                
+                $messagesResponse = $this->supabase->select('chat_messages', '*', [
+                    'session_id' => $currentSession->id
+                ], ['order' => ['column' => 'created_at', 'ascending' => true]]);
+                
+                $messages = $messagesResponse->data ?? [];
+            }
+
+            // Format messages
+            $formattedMessages = [];
+            foreach ($messages as $message) {
+                $msg = is_array($message) ? (object)$message : $message;
+                $formattedMessages[] = [
+                    'id' => $msg->id,
+                    'text' => $msg->message,
+                    'is_user' => $msg->sender_id === $id,
+                    'timestamp' => $msg->created_at,
+                    'created_at_formatted' => date('M d, H:i', strtotime($msg->created_at))
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'user' => $user,
+                'chat_session' => $currentSession,
+                'messages' => $formattedMessages
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Show user details error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load user details'
+            ], 500);
+        }
+    }
+
+    /**
      * List all properties
      */
     /**
@@ -915,15 +980,15 @@ class SupabaseAdminDashboardController extends Controller
     public function setPrimaryImage($propertyId, $imageId)
     {
         try {
-            // First, unset all primary images for this property
+            // First, unset all primary images for this property - use service key
             $this->supabase->update('property_images', [
                 'is_primary' => false
-            ], ['property_id' => $propertyId]);
+            ], ['property_id' => $propertyId], true);
 
-            // Then set the selected image as primary
+            // Then set the selected image as primary - use service key
             $this->supabase->update('property_images', [
                 'is_primary' => true
-            ], ['id' => $imageId]);
+            ], ['id' => $imageId], true);
 
             return back()->with('success', 'Primary image updated successfully!');
 
@@ -957,8 +1022,8 @@ class SupabaseAdminDashboardController extends Controller
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($img->image_path);
             }
 
-            // Delete from database
-            $this->supabase->delete('property_images', ['id' => $imageId]);
+            // Delete from database - use service key
+            $this->supabase->delete('property_images', ['id' => $imageId], true);
 
             // If this was the primary image, set another image as primary
             if ($img->is_primary) {
@@ -970,7 +1035,7 @@ class SupabaseAdminDashboardController extends Controller
                     $firstImage = is_array($remainingImages->data[0]) ? (object)$remainingImages->data[0] : $remainingImages->data[0];
                     $this->supabase->update('property_images', [
                         'is_primary' => true
-                    ], ['id' => $firstImage->id]);
+                    ], ['id' => $firstImage->id], true);
                 }
             }
 

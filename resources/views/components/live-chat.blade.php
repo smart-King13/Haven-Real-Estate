@@ -374,9 +374,10 @@ function liveChat() {
             this.showQuickActions = false;
             this.isSending = true;
             
-            // Add user message to UI immediately for better UX
+            // Add user message to UI immediately for optimistic update
+            const tempId = Date.now();
             const userMessage = {
-                id: Date.now(),
+                id: tempId,
                 text: messageText,
                 is_user: true,
                 timestamp: new Date().toISOString(),
@@ -399,13 +400,19 @@ function liveChat() {
                     })
                 });
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success && data.response) {
-                        // Show typing indicator for more realistic feel
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    // Message sent successfully
+                    
+                    // If backend returned a real message object, replace our optimistic one (optional, but good practice)
+                    // For now, we just keep the optimistic one as it's faster
+                    
+                    if (data.response) {
+                        // Show typing indicator
                         this.isTyping = true;
                         
-                        // Simulate realistic typing delay based on message length
+                        // Simulate realistic typing delay
                         const typingDelay = Math.min(Math.max(data.response.text.length * 30, 1000), 3000);
                         
                         setTimeout(() => {
@@ -423,7 +430,7 @@ function liveChat() {
                             this.messages.push(botMessage);
                             this.scrollToBottom();
                             
-                            // Show notification if chat is closed
+                            // Notification if closed
                             if (!this.isOpen) {
                                 this.hasUnreadMessages = true;
                                 this.unreadCount++;
@@ -432,11 +439,14 @@ function liveChat() {
                         }, typingDelay);
                     }
                 } else {
-                    throw new Error('Failed to send message');
+                    console.error('Server error:', data);
+                    throw new Error(data.message || data.error || 'Failed to send message');
                 }
             } catch (error) {
                 console.error('Error sending message:', error);
-                this.showErrorMessage('Failed to send message. Please check your connection and try again.');
+                // Remove the optimistic message or show error state
+                this.messages = this.messages.filter(m => m.id !== tempId);
+                this.showErrorMessage(error.message || 'Failed to send message. Please check your connection.');
             } finally {
                 this.isSending = false;
             }

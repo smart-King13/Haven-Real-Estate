@@ -12,26 +12,9 @@
                     <h1 class="text-3xl font-black text-primary-950 uppercase tracking-tighter">Live Chat Management</h1>
                     <p class="text-gray-600 font-light mt-2">Monitor and respond to customer inquiries in real-time</p>
                 </div>
-                <div class="flex items-center gap-4">
-                    <div class="flex items-center gap-2">
-                        <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                        <span class="text-sm font-medium text-gray-700">Online</span>
-                    </div>
-                    <button onclick="toggleAutoRefresh()" 
-                            class="px-3 py-2 text-sm font-medium rounded-lg transition-colors"
-                            :class="isAutoRefreshEnabled ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-                            id="autoRefreshBtn">
-                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        Auto-refresh: ON
-                    </button>
-                    <button onclick="refreshChats()" class="px-4 py-2 bg-accent-600 text-white font-medium rounded-lg hover:bg-accent-700 transition-colors">
-                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                        </svg>
-                        Refresh Now
-                    </button>
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                    <span class="text-sm font-medium text-gray-700">Online</span>
                 </div>
             </div>
         </div>
@@ -210,32 +193,11 @@
 let currentChatSession = null;
 let chatSessions = [];
 let lastUpdateTime = null;
-let isAutoRefreshEnabled = true;
 
 // Initialize chat management
 document.addEventListener('DOMContentLoaded', function() {
     loadChatSessions();
     loadStatistics();
-    
-    // Reasonable refresh intervals - only if auto-refresh is enabled
-    setInterval(() => {
-        if (isAutoRefreshEnabled) {
-            loadChatSessions();
-        }
-    }, 15000); // Every 15 seconds
-    
-    setInterval(() => {
-        if (isAutoRefreshEnabled) {
-            loadStatistics();
-        }
-    }, 60000); // Every 60 seconds
-    
-    // Auto-refresh current conversation less frequently
-    setInterval(() => {
-        if (currentChatSession && isAutoRefreshEnabled) {
-            selectChatSession(currentChatSession.id);
-        }
-    }, 10000); // Every 10 seconds
 });
 
 // Load chat sessions from server
@@ -574,40 +536,6 @@ function formatTime(timestamp) {
     if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
     if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
     return date.toLocaleDateString();
-}
-
-function refreshChats() {
-    console.log('Manual refresh triggered');
-    loadChatSessions();
-    loadStatistics();
-    if (currentChatSession) {
-        selectChatSession(currentChatSession.id);
-    }
-}
-
-function toggleAutoRefresh() {
-    isAutoRefreshEnabled = !isAutoRefreshEnabled;
-    const btn = document.getElementById('autoRefreshBtn');
-    
-    if (isAutoRefreshEnabled) {
-        btn.className = 'px-3 py-2 text-sm font-medium rounded-lg transition-colors bg-green-100 text-green-700 hover:bg-green-200';
-        btn.innerHTML = `
-            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            Auto-refresh: ON
-        `;
-        console.log('Auto-refresh enabled');
-    } else {
-        btn.className = 'px-3 py-2 text-sm font-medium rounded-lg transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200';
-        btn.innerHTML = `
-            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            Auto-refresh: OFF
-        `;
-        console.log('Auto-refresh disabled');
-    }
 }
 </script>
 @endsection

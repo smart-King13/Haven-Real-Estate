@@ -140,11 +140,12 @@
                         <label class="field-label required">Subject</label>
                         <select name="subject" class="select-field" required>
                             <option value="">Select inquiry type</option>
-                            <option value="Property Purchase" {{ old('subject') == 'Property Purchase' ? 'selected' : '' }}>Property Purchase</option>
-                            <option value="Property Rental" {{ old('subject') == 'Property Rental' ? 'selected' : '' }}>Property Rental</option>
-                            <option value="Sell My Property" {{ old('subject') == 'Sell My Property' ? 'selected' : '' }}>Sell My Property</option>
-                            <option value="Expert Consultation" {{ old('subject') == 'Expert Consultation' ? 'selected' : '' }}>Expert Consultation</option>
-                            <option value="Other" {{ old('subject') == 'Other' ? 'selected' : '' }}>Other</option>
+                            <option value="Property Inquiry" {{ (old('subject') ?? request('subject')) == 'Property Inquiry' ? 'selected' : '' }}>Property Inquiry</option>
+                            <option value="Property Purchase" {{ (old('subject') ?? request('subject')) == 'Property Purchase' ? 'selected' : '' }}>Property Purchase</option>
+                            <option value="Property Rental" {{ (old('subject') ?? request('subject')) == 'Property Rental' ? 'selected' : '' }}>Property Rental</option>
+                            <option value="Sell My Property" {{ (old('subject') ?? request('subject')) == 'Sell My Property' ? 'selected' : '' }}>Sell My Property</option>
+                            <option value="Expert Consultation" {{ (old('subject') ?? request('subject')) == 'Expert Consultation' ? 'selected' : '' }}>Expert Consultation</option>
+                            <option value="Other" {{ (old('subject') ?? request('subject')) == 'Other' ? 'selected' : '' }}>Other</option>
                         </select>
                         @error('subject')
                             <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -153,7 +154,7 @@
 
                     <div class="space-y-2">
                         <label class="field-label required">Message</label>
-                        <textarea name="message" rows="6" class="textarea-field" placeholder="Tell us about your property needs, preferences, or any questions you have..." required>{{ old('message') }}</textarea>
+                        <textarea name="message" rows="6" class="textarea-field" placeholder="Tell us about your property needs, preferences, or any questions you have..." required>{{ old('message') ?? request('message') }}</textarea>
                         @error('message')
                             <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                         @enderror
